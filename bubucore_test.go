@@ -1,8 +1,8 @@
 package bubucore_test
 
 import (
+	"github.com/bubulearn/bubucore"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/bubulearn/bubucore"
 	"testing"
 )
 

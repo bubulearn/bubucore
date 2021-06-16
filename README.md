@@ -10,5 +10,4 @@ cd bubucore
 make
 ```
 
-Also, you can use `make build_fast` to skip
-some tests & linters while build.
+Also, you can use `make build_fast` to skip some tests & linters while build.
