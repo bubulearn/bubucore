@@ -36,7 +36,7 @@ const (
 
 // InitLogs initializes logs writers
 func InitLogs() {
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(Opt.LogLevelDft)
 	log.SetFormatter(&log.JSONFormatter{
 		FieldMap: log.FieldMap{
 			log.FieldKeyTime:  LogFieldTimestamp,

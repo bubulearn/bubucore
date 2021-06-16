@@ -11,6 +11,9 @@ var Opt = &Options{
 	ConfigFilePath: "./.env",
 	ConfigFileType: "env",
 
+	APIVersion:  "v1",
+	APIBasePath: "/api/v1",
+
 	LogsPath:    "data/logs",
 	LogFileGin:  "gin.log",
 	LogFileApp:  "app.log",
