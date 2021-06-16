@@ -19,6 +19,11 @@ func ErrorResponse(ctx *gin.Context, err *Error) {
 
 // ErrorResponseE send standard error as response
 func ErrorResponseE(ctx *gin.Context, err error, status int) {
+	e, ok := err.(*Error)
+	if ok {
+		ErrorResponse(ctx, e)
+		return
+	}
 	ErrorResponse(ctx, NewError(status, err.Error()))
 }
 
