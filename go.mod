@@ -1,4 +1,4 @@
-module bubucore
+module gitlab.com/bubulearn/bubucore
 
 go 1.16
 
