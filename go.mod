@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/gin-gonic/gin v1.7.2
+	github.com/google/uuid v1.2.0
+	github.com/json-iterator/go v1.1.11
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.0
 	github.com/stretchr/testify v1.7.0

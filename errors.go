@@ -7,6 +7,7 @@ import (
 // Errors
 var (
 	ErrUserBlocked  = NewError(http.StatusForbidden, "requested user is blocked")
+	ErrPassFailed   = NewError(http.StatusUnauthorized, "password is invalid")
 	ErrTokenInvalid = NewError(http.StatusUnauthorized, "token is invalid")
 	ErrTokenExpired = NewError(http.StatusUnauthorized, "token is expired")
 )
