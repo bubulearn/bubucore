@@ -105,6 +105,9 @@ func GetDefaultRouter() *gin.Engine {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
+
+	// JSON-formatted logs
+	router.Use(gin.LoggerWithFormatter(GinLogFormatter))
 	router.Use(MiddlewareLogBody())
 
 	return router
