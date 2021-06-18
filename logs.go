@@ -1,7 +1,6 @@
 package bubucore
 
 import (
-	"bytes"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -84,33 +83,6 @@ func (h *LogDftFieldsHook) Fire(e *log.Entry) error {
 	e.Data[LogFieldHostname] = Opt.GetHostname()
 	e.Data[LogFieldAPIVersion] = Opt.APIVersion
 	return nil
-}
-
-// GinBodyLogWriter is a writer to write response body to the log
-type GinBodyLogWriter struct {
-	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-// Write body
-func (w GinBodyLogWriter) Write(b []byte) (int, error) {
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
-}
-
-// MiddlewareLogBody is a middleware to write response body to the log
-func MiddlewareLogBody() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		writer := &GinBodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
-		ctx.Writer = writer
-		ctx.Next()
-		logger := log.WithField(LogFieldType, LogTypeHTTPIO)
-		if ctx.Writer.Status() >= 500 {
-			logger.Error(writer.body.String())
-		} else if ctx.Writer.Status() >= 400 {
-			logger.Warn(writer.body.String())
-		}
-	}
 }
 
 // endregion GIN BODY

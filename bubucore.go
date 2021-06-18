@@ -1,8 +1,11 @@
 package bubucore
 
 import (
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
 )
 
@@ -18,26 +21,45 @@ var Opt = &Options{
 	LogFileGin:  "gin.log",
 	LogFileApp:  "app.log",
 	LogLevelDft: log.InfoLevel,
+
+	ParseJWTKeyFunc: func(token *jwt.Token) (interface{}, error) {
+		return "", NewError(http.StatusInternalServerError, "JWT parse function is not defined")
+	},
 }
 
 // Options represents package options
 type Options struct {
+	// ConfigFilePath is a path to an app config file
 	ConfigFilePath string
+	// ConfigFileType is an app config file type, e. g. "env"
 	ConfigFileType string
 
-	LogsPath    string
-	LogFileGin  string
-	LogFileApp  string
+	// LogsPath is a path to the log files directory
+	LogsPath string
+	// LogFileGin is a filename of gin server log
+	LogFileGin string
+	// LogFileApp is a filename of app server log
+	LogFileApp string
+	// LogLevelDft is a default log level if none is defined in config file
 	LogLevelDft log.Level
 
-	APIVersion  string
+	// APIVersion is an API version identifier, e. g. "v1"
+	APIVersion string
+	// APIBasePath is a service API base path, e. g. /api/v1
 	APIBasePath string
 
-	ServiceName        string
+	// ServiceName is a service identifier
+	ServiceName string
+	// ServiceDescription is a human-readable service description
 	ServiceDescription string
-	ServiceRepo        string
+	// ServiceRepo is an URL to service git repository
+	ServiceRepo string
 
+	// Hostname of current node if is required to override os.Hostname() value
 	Hostname string
+
+	// ParseJWTKeyFunc is a function returning a JWT password
+	ParseJWTKeyFunc jwt.Keyfunc
 }
 
 // GetHostname returns hostname from options or OS
@@ -81,4 +103,15 @@ func ReadConfig() (*viper.Viper, error) {
 	}
 
 	return conf, nil
+}
+
+// GetDefaultRouter creates new gin router with default middlewares
+func GetDefaultRouter() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(MiddlewareLogBody())
+
+	return router
 }

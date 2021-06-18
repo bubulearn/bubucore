@@ -2,6 +2,7 @@ package bubucore_test
 
 import (
 	"github.com/bubulearn/bubucore"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -40,4 +41,9 @@ func TestReadConfig(t *testing.T) {
 	bubucore.Opt.ConfigFilePath = "__unkown_file__.env"
 	_, err = bubucore.ReadConfig()
 	assert.Error(t, err)
+}
+
+func TestGetDefaultRouter(t *testing.T) {
+	_ = bubucore.GetDefaultRouter()
+	assert.Equal(t, gin.ReleaseMode, gin.Mode())
 }

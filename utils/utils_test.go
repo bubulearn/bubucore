@@ -67,7 +67,8 @@ func TestFilterEmail(t *testing.T) {
 	emails := map[string]string{
 		" \njohn_doe@example.com ":          "john_doe@example.com",
 		" John Doe <john_doe@example.com> ": "john_doe@example.com",
-		"   ":                               "",
+
+		"   ": "",
 	}
 	for input, expected := range emails {
 		res := utils.FilterEmail(input)
