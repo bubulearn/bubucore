@@ -9,7 +9,7 @@ import (
 
 // ParseAccessToken parses access token and returns its claims
 func ParseAccessToken(tokenContent string) (*AccessTokenClaims, error) {
-	parsed, err := jwt.ParseWithClaims(tokenContent, &AccessTokenClaims{}, Opt.ParseJWTKeyFunc)
+	parsed, err := jwt.ParseWithClaims(tokenContent, &AccessTokenClaims{}, parseJWTKeyFunc)
 	if err != nil {
 		logrus.Warn("failed to parse JWT (access token): ", tokenContent, ": ", err)
 		return nil, ErrTokenInvalid
@@ -21,6 +21,14 @@ func ParseAccessToken(tokenContent string) (*AccessTokenClaims, error) {
 		return nil, ErrTokenInvalid
 	}
 	return claims, nil
+}
+
+// parseJWTKeyFunc returns JWT password key
+func parseJWTKeyFunc(token *jwt.Token) (interface{}, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, ErrTokenUnsupported
+	}
+	return Opt.JWTPassword, nil
 }
 
 // TokenClaims is token claims interface

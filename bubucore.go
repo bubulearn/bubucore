@@ -1,11 +1,9 @@
 package bubucore
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"net/http"
 	"os"
 )
 
@@ -21,10 +19,6 @@ var Opt = &Options{
 	LogFileGin:  "gin.log",
 	LogFileApp:  "app.log",
 	LogLevelDft: log.InfoLevel,
-
-	ParseJWTKeyFunc: func(token *jwt.Token) (interface{}, error) {
-		return "", NewError(http.StatusInternalServerError, "JWT parse function is not defined")
-	},
 }
 
 // Options represents package options
@@ -58,8 +52,8 @@ type Options struct {
 	// Hostname of current node if is required to override os.Hostname() value
 	Hostname string
 
-	// ParseJWTKeyFunc is a function returning a JWT password
-	ParseJWTKeyFunc jwt.Keyfunc
+	// JWTPassword is JWT password key
+	JWTPassword []byte
 }
 
 // GetHostname returns hostname from options or OS
