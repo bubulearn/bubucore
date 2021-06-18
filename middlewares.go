@@ -43,6 +43,32 @@ func MiddlewareJWTAccess() gin.HandlerFunc {
 	}
 }
 
+// MiddlewareValidateRole validates user role from claims
+func MiddlewareValidateRole(role int) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		c, ok := ctx.Get(KeyAccessClaims)
+		if !ok {
+			ErrorResponseS(ctx, "no claims initialized", http.StatusInternalServerError)
+			ctx.Abort()
+			return
+		}
+		claims, ok := c.(*AccessTokenClaims)
+		if !ok {
+			ErrorResponseS(ctx, "unexpected claims type", http.StatusInternalServerError)
+			ctx.Abort()
+			return
+		}
+		if claims.Role != role {
+			if !ok {
+				ErrorResponseS(ctx, "unexpected user role", http.StatusForbidden)
+				ctx.Abort()
+				return
+			}
+		}
+		ctx.Next()
+	}
+}
+
 // MiddlewareLogBody is a middleware to write response body to the log
 func MiddlewareLogBody() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
