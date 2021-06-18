@@ -119,6 +119,14 @@ func GinLogFormatter(param gin.LogFormatterParams) string {
 	data[LogFieldHostname] = Opt.GetHostname()
 	data[LogFieldAPIVersion] = Opt.APIVersion
 
+	if param.StatusCode >= 500 {
+		data[LogFieldLevel] = "error"
+	} else if param.StatusCode >= 400 {
+		data[LogFieldLevel] = "warning"
+	} else {
+		data[LogFieldLevel] = "info"
+	}
+
 	// not using marshalling for speed-up
 	values := make([]string, len(data))
 	i := 0
