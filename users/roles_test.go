@@ -1,4 +1,4 @@
-package models
+package users
 
 import (
 	"github.com/stretchr/testify/assert"
