@@ -12,8 +12,8 @@ import (
 
 // notification-service endpoints
 const (
-	EndpointAppReport     = "app-report"
-	EndpointResetPassLink = "reset-pass-link"
+	EndpointAppReport   = "app-report"
+	EndpointCustomEmail = "email"
 )
 
 // NewClient creates new notifications service client
@@ -77,6 +77,11 @@ func (c *Client) Send(endpoint string, data interface{}) error {
 // SendPlainText sends plain message notification
 func (c *Client) SendPlainText(endpoint string, msg string) error {
 	return c.Send(endpoint, &PlainText{Text: msg})
+}
+
+// SendEmail send custom email notification
+func (c *Client) SendEmail(n Email) error {
+	return c.Send(EndpointCustomEmail, n)
 }
 
 // SendAppReport sends notification about app report
