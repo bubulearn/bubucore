@@ -16,6 +16,12 @@ const (
 	EndpointCustomEmail = "email"
 )
 
+// Templates names
+const (
+	TplResetPassLink   = "reset-pass-link"
+	TplResetPassResult = "reset-pass-result"
+)
+
 // NewClient creates new notifications service client
 func NewClient(host string, token string) *Client {
 	return &Client{
