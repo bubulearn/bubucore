@@ -33,8 +33,8 @@ type Email struct {
 
 	Text string `json:"text,omitempty"`
 
-	TemplateName   string      `json:"template_name,omitempty"`
-	TemplateValues interface{} `json:"template_values,omitempty"`
+	TemplateName   string                 `json:"template_name,omitempty"`
+	TemplateValues map[string]interface{} `json:"template_values,omitempty"`
 }
 
 // Filter filters notification values
