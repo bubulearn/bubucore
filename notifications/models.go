@@ -28,38 +28,45 @@ func (n *PlainText) Validate() error {
 
 // Email notification
 type Email struct {
-	Subject    string   `json:"subject"`
-	Recipients []string `json:"recipients"`
+	Recipients   []string `json:"recipients"`
+	TemplateName string   `json:"template_name"`
 
-	Text string `json:"text,omitempty"`
-
-	TemplateName   string                 `json:"template_name,omitempty"`
+	Subject        string                 `json:"subject,omitempty"`
 	TemplateValues map[string]interface{} `json:"template_values,omitempty"`
+
+	recipients []*mail.Address
 }
 
 // Filter filters notification values
 func (n *Email) Filter() {
 	n.Subject = strings.TrimSpace(n.Subject)
-	n.Text = strings.TrimSpace(n.Text)
 	n.TemplateName = strings.TrimSpace(n.TemplateName)
 }
 
 // Validate checks if values are OK
 func (n *Email) Validate() error {
 	n.Filter()
-	if n.Subject == "" {
-		return bubucore.NewError(http.StatusBadRequest, "no subject given")
-	}
 	if len(n.Recipients) == 0 {
 		return bubucore.NewError(http.StatusBadRequest, "empty recipients list given")
 	}
-	if n.Text == "" && n.TemplateName == "" {
-		return bubucore.NewError(http.StatusBadRequest, "no text or template name given")
+	if n.TemplateName == "" {
+		return bubucore.NewError(http.StatusBadRequest, "no template name given")
+	}
+	_, err := n.GetRecipients()
+	if err != nil {
+		return bubucore.NewError(http.StatusBadRequest, "recipients list is invalid: "+err.Error())
 	}
 	return nil
 }
 
 // GetRecipients prepares recipients list
 func (n *Email) GetRecipients() ([]*mail.Address, error) {
-	return mail.ParseAddressList(strings.Join(n.Recipients, ", "))
+	if n.recipients == nil {
+		var err error
+		n.recipients, err = mail.ParseAddressList(strings.Join(n.Recipients, ", "))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return n.recipients, nil
 }
