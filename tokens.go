@@ -88,8 +88,8 @@ func (c TokenClaimsDft) GetRelatedTokenID() string {
 type AccessTokenClaims struct {
 	TokenClaimsDft
 	Role           int    `json:"rl"`
-	Name           string `json:"nm"`
-	RefreshTokenID string `json:"rti"`
+	Name           string `json:"nm,omitempty"`
+	RefreshTokenID string `json:"rti,omitempty"`
 }
 
 // Valid checks is data in claims is valid
@@ -97,7 +97,7 @@ func (c AccessTokenClaims) Valid() error {
 	if c.Role == 0 {
 		return ErrTokenInvalid
 	}
-	if !utils.ValidateUUID(c.GetRelatedTokenID()) {
+	if c.GetRelatedTokenID() != "" && !utils.ValidateUUID(c.GetRelatedTokenID()) {
 		return ErrTokenInvalid
 	}
 	return c.TokenClaimsDft.Valid()
