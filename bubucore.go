@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
 )
 
@@ -109,6 +110,13 @@ func GetDefaultRouter() *gin.Engine {
 	// JSON-formatted logs
 	router.Use(gin.LoggerWithFormatter(GinLogFormatter))
 	router.Use(MiddlewareLogBody())
+
+	router.NoRoute(func(ctx *gin.Context) {
+		ctx.JSON(
+			http.StatusNotFound,
+			NewError(http.StatusNotFound, "unknown endpoint"),
+		)
+	})
 
 	return router
 }
