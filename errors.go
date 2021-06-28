@@ -11,6 +11,7 @@ var (
 	ErrTokenInvalid     = NewError(http.StatusUnauthorized, "token is invalid")
 	ErrTokenExpired     = NewError(http.StatusUnauthorized, "token is expired")
 	ErrTokenUnsupported = NewError(http.StatusUnprocessableEntity, "unsupported sign method")
+	ErrNotFound         = NewError(http.StatusNotFound, "not found")
 )
 
 // NewError creates a new Error instance
