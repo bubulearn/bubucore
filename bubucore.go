@@ -105,7 +105,16 @@ func GetDefaultRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-	router.Use(gin.Recovery())
+
+	// Recover panics with formatted log
+	router.Use(gin.CustomRecovery(func(ctx *gin.Context, recovered interface{}) {
+		log.Error(recovered)
+		if s, ok := recovered.(string); ok {
+			err := NewError(http.StatusInternalServerError, s)
+			ErrorResponse(ctx, err)
+		}
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+	}))
 
 	// JSON-formatted logs
 	router.Use(gin.LoggerWithFormatter(GinLogFormatter))
