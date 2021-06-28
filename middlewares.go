@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/bubulearn/bubucore/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -46,24 +46,16 @@ func MiddlewareJWTAccess() gin.HandlerFunc {
 // MiddlewareValidateRole validates user role from claims
 func MiddlewareValidateRole(role int) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		c, ok := ctx.Get(KeyAccessClaims)
-		if !ok {
-			ErrorResponseS(ctx, "no claims initialized", http.StatusInternalServerError)
-			ctx.Abort()
-			return
-		}
-		claims, ok := c.(*AccessTokenClaims)
-		if !ok {
-			ErrorResponseS(ctx, "unexpected claims type", http.StatusInternalServerError)
+		claims, err := GinGetAccessClaims(ctx)
+		if err != nil {
+			ErrorResponseE(ctx, err, http.StatusInternalServerError)
 			ctx.Abort()
 			return
 		}
 		if claims.Role != role {
-			if !ok {
-				ErrorResponseS(ctx, "unexpected user role", http.StatusForbidden)
-				ctx.Abort()
-				return
-			}
+			ErrorResponseS(ctx, "unexpected user role", http.StatusForbidden)
+			ctx.Abort()
+			return
 		}
 		ctx.Next()
 	}
@@ -75,7 +67,7 @@ func MiddlewareLogBody() gin.HandlerFunc {
 		writer := &ginBodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
 		ctx.Writer = writer
 		ctx.Next()
-		logger := logrus.WithField(LogFieldType, LogTypeHTTPIO)
+		logger := log.WithField(LogFieldType, LogTypeHTTPIO)
 		if ctx.Writer.Status() >= 500 {
 			logger.Error(writer.body.String())
 		} else if ctx.Writer.Status() >= 400 {
@@ -94,4 +86,19 @@ type ginBodyLogWriter struct {
 func (w ginBodyLogWriter) Write(b []byte) (int, error) {
 	w.body.Write(b)
 	return w.ResponseWriter.Write(b)
+}
+
+// GinGetAccessClaims returns AccessTokenClaims from the current gin context
+func GinGetAccessClaims(ctx *gin.Context) (*AccessTokenClaims, error) {
+	c, ok := ctx.Get(KeyAccessClaims)
+	if !ok {
+		log.Warn("no claims initialized")
+		return nil, ErrTokenInvalid
+	}
+	claims, ok := c.(*AccessTokenClaims)
+	if !ok {
+		log.Warn("unexpected claims type")
+		return nil, ErrTokenInvalid
+	}
+	return claims, nil
 }
