@@ -31,7 +31,7 @@ type Client struct {
 	db     *mongo.Database
 }
 
-// Init initialized mongo db connection
+// Init initialized mongo DB connection
 func (c *Client) Init() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -65,19 +65,17 @@ func (c *Client) Init() error {
 	return nil
 }
 
-// Close closes db connection context
+// GetCollection returns mongo.Collection instance by its name
+func (c *Client) GetCollection(name string) *mongo.Collection {
+	return c.db.Collection(name)
+}
+
+// Close closes DB connection context
 func (c *Client) Close() {
 	if c.client != nil {
 		err := c.client.Disconnect(context.Background())
 		if err != nil {
 			log.Error(err)
 		}
-	}
-}
-
-// NewDAO creates new DAO instance
-func (c *Client) NewDAO(collectionName string) *DAO {
-	return &DAO{
-		C: c.db.Collection(collectionName),
 	}
 }

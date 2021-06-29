@@ -10,9 +10,16 @@ import (
 	"time"
 )
 
+// DAOInterface is a DAO interface
+type DAOInterface interface {
+	GetCollectionName() string
+}
+
 // DAO is a mongo collection abstraction
 type DAO struct {
-	C *mongo.Collection
+	DAOInterface
+	Client *Client
+	c      *mongo.Collection
 }
 
 // FetchByID fetches row by ID to the target
@@ -21,7 +28,7 @@ func (d *DAO) FetchByID(id string, target interface{}) error {
 	defer cancel()
 
 	filter := bson.M{"_id": id}
-	err := d.C.FindOne(ctx, filter).Decode(target)
+	err := d.C().FindOne(ctx, filter).Decode(target)
 
 	if err != nil {
 		if err != mongo.ErrNoDocuments {
@@ -44,7 +51,7 @@ func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options
 	ctx, cancel := d.Ctx(10)
 	defer cancel()
 
-	cur, err := d.C.Find(ctx, filter, opts...)
+	cur, err := d.C().Find(ctx, filter, opts...)
 	if err != nil {
 		return err
 	}
@@ -65,6 +72,14 @@ func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options
 	}
 
 	return nil
+}
+
+// C returns mongo.Collection instance
+func (d *DAO) C() *mongo.Collection {
+	if d.c == nil {
+		d.c = d.Client.GetCollection(d.GetCollectionName())
+	}
+	return d.c
 }
 
 // Ctx creates new timeout context
