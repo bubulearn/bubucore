@@ -13,6 +13,8 @@ import (
 // DAOInterface is an interface for DAOs
 type DAOInterface interface {
 	FetchByID(id string, target interface{}) error
+	FetchByIDs(ids []string, target interface{}, opts ...*options.FindOptions) error
+	FetchByExIDs(ids []string, target interface{}, opts ...*options.FindOptions) error
 	FetchAll(target interface{}, opts ...*options.FindOptions) error
 	FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error
 }
@@ -42,6 +44,18 @@ func (d *DAO) FetchByID(id string, target interface{}) error {
 	}
 
 	return nil
+}
+
+// FetchByIDs fetches rows by IDs list
+func (d *DAO) FetchByIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
+	filter := bson.M{"_id": bson.M{"$in": ids}}
+	return d.FetchAllF(target, filter, opts...)
+}
+
+// FetchByExIDs fetches rows by exclude IDs list
+func (d *DAO) FetchByExIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
+	filter := bson.M{"_id": bson.M{"$nin": ids}}
+	return d.FetchAllF(target, filter, opts...)
 }
 
 // FetchAll fetches all rows from cursor to the target
