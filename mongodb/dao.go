@@ -7,19 +7,30 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"net/http"
 	"time"
 )
 
-// DAOInterface is a DAO interface
+// DAOInterface is an interface for DAOs
 type DAOInterface interface {
-	GetCollectionName() string
+	FetchByID(id string, target interface{}) error
+	FetchAll(target interface{}, opts ...*options.FindOptions) error
+	FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error
+}
+
+// NewDAO creates new DAO instance with the specified collection
+func NewDAO(collection *mongo.Collection) (*DAO, error) {
+	if collection == nil {
+		return nil, bubucore.NewError(http.StatusInternalServerError, "nil collection given")
+	}
+	return &DAO{
+		c: collection,
+	}, nil
 }
 
 // DAO is a mongo collection abstraction
 type DAO struct {
-	DAOInterface
-	Client *Client
-	c      *mongo.Collection
+	c *mongo.Collection
 }
 
 // FetchByID fetches row by ID to the target
@@ -65,11 +76,8 @@ func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options
 	return nil
 }
 
-// C returns mongo.Collection instance
+// C returns Collection
 func (d *DAO) C() *mongo.Collection {
-	if d.c == nil {
-		d.c = d.Client.GetCollection(d.GetCollectionName())
-	}
 	return d.c
 }
 
@@ -91,7 +99,12 @@ func (d *DAO) Err(err error) error {
 		needLog = false
 	}
 	if needLog {
-		log.WithField("dao", d.GetCollectionName()).Error(err)
+		cName := "_unknown_"
+		c := d.C()
+		if c != nil {
+			cName = c.Name()
+		}
+		log.WithField("dao", cName).Error(err)
 	}
 	return err
 }
