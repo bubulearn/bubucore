@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"net/http"
 	"time"
 )
 
@@ -19,13 +18,10 @@ type DAOInterface interface {
 }
 
 // NewDAO creates new DAO instance with the specified collection
-func NewDAO(collection *mongo.Collection) (*DAO, error) {
-	if collection == nil {
-		return nil, bubucore.NewError(http.StatusInternalServerError, "nil collection given")
-	}
+func NewDAO(collection *mongo.Collection) *DAO {
 	return &DAO{
 		c: collection,
-	}, nil
+	}
 }
 
 // DAO is a mongo collection abstraction
