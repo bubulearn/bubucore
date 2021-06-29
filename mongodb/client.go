@@ -70,6 +70,13 @@ func (c *Client) GetCollection(name string) *mongo.Collection {
 	return c.db.Collection(name)
 }
 
+// GetDAO returns DAO instance with current Client
+func (c *Client) GetDAO() *DAO {
+	return &DAO{
+		Client: c,
+	}
+}
+
 // Close closes DB connection context
 func (c *Client) Close() {
 	if c.client != nil {
