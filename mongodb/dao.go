@@ -31,11 +31,7 @@ func (d *DAO) FetchByID(id string, target interface{}) error {
 	err := d.C().FindOne(ctx, filter).Decode(target)
 
 	if err != nil {
-		if err != mongo.ErrNoDocuments {
-			log.Error(err)
-			return err
-		}
-		return bubucore.ErrNotFound
+		return d.Err(err)
 	}
 
 	return nil
@@ -53,22 +49,17 @@ func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options
 
 	cur, err := d.C().Find(ctx, filter, opts...)
 	if err != nil {
-		return err
+		return d.Err(err)
 	}
 
 	defer func(cur *mongo.Cursor, ctx context.Context) {
 		err := cur.Close(ctx)
-		if err != nil {
-			log.Error(err)
-		}
+		_ = d.Err(err)
 	}(cur, ctx)
 
 	err = cur.All(ctx, &target)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return bubucore.ErrNotFound
-		}
-		return err
+		return d.Err(err)
 	}
 
 	return nil
@@ -85,4 +76,22 @@ func (d *DAO) C() *mongo.Collection {
 // Ctx creates new timeout context
 func (d *DAO) Ctx(seconds uint) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
+}
+
+// Err transforms and log an error if needed
+func (d *DAO) Err(err error) error {
+	if err == nil {
+		return nil
+	}
+	needLog := true
+	switch err {
+	case mongo.ErrNoDocuments:
+		return bubucore.ErrNotFound
+	case bubucore.ErrNotFound:
+		needLog = false
+	}
+	if needLog {
+		log.WithField("dao", d.GetCollectionName()).Error(err)
+	}
+	return err
 }
