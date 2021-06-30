@@ -5,6 +5,7 @@ import (
 	"github.com/bubulearn/bubucore"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
@@ -19,6 +20,8 @@ type DAO interface {
 	FetchOne(target interface{}, filter interface{}, opts ...*options.FindOneOptions) error
 	FetchAll(target interface{}, opts ...*options.FindOptions) error
 	FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error
+
+	InsertOne(data interface{}, opts ...*options.InsertOneOptions) (id string, err error)
 
 	Ctx(seconds uint) (context.Context, context.CancelFunc)
 	Err(err error) error
@@ -103,6 +106,34 @@ func (d *DAOMg) FetchAllF(target interface{}, filter interface{}, opts ...*optio
 	}
 
 	return nil
+}
+
+// InsertOne insets row to the collection
+func (d *DAOMg) InsertOne(data interface{}, opts ...*options.InsertOneOptions) (id string, err error) {
+	ctx, cancel := d.Ctx(3)
+	defer cancel()
+
+	doc, err := bson.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := d.C().InsertOne(ctx, doc, opts...)
+	if err != nil {
+		return "", err
+	}
+
+	id, ok := res.InsertedID.(string)
+	if ok {
+		return id, nil
+	}
+
+	v, ok := res.InsertedID.(primitive.ObjectID)
+	if ok {
+		return v.String(), nil
+	}
+
+	return "", nil
 }
 
 // C returns Collection
