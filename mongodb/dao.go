@@ -100,7 +100,7 @@ func (d *DAOMg) FetchAllF(target interface{}, filter interface{}, opts ...*optio
 		_ = d.Err(err)
 	}(cur, ctx)
 
-	err = cur.All(ctx, &target)
+	err = cur.All(ctx, target)
 	if err != nil {
 		return d.Err(err)
 	}
