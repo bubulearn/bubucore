@@ -10,34 +10,39 @@ import (
 	"time"
 )
 
-// DAOInterface is an interface for DAOs
-type DAOInterface interface {
-	FetchByID(id string, target interface{}) error
+// DAO is an interface for DAOs
+type DAO interface {
+	FetchByID(id string, target interface{}, opts ...*options.FindOneOptions) error
 	FetchByIDs(ids []string, target interface{}, opts ...*options.FindOptions) error
 	FetchByExIDs(ids []string, target interface{}, opts ...*options.FindOptions) error
+
+	FetchOne(target interface{}, filter interface{}, opts ...*options.FindOneOptions) error
 	FetchAll(target interface{}, opts ...*options.FindOptions) error
 	FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error
+
+	Ctx(seconds uint) (context.Context, context.CancelFunc)
+	Err(err error) error
 }
 
-// NewDAO creates new DAO instance with the specified collection
-func NewDAO(collection *mongo.Collection) *DAO {
-	return &DAO{
+// NewDAOMg creates new DAOMg instance with the specified collection
+func NewDAOMg(collection *mongo.Collection) *DAOMg {
+	return &DAOMg{
 		c: collection,
 	}
 }
 
-// DAO is a mongo collection abstraction
-type DAO struct {
+// DAOMg is a mongo collection abstraction
+type DAOMg struct {
 	c *mongo.Collection
 }
 
 // FetchByID fetches row by ID to the target
-func (d *DAO) FetchByID(id string, target interface{}) error {
+func (d *DAOMg) FetchByID(id string, target interface{}, opts ...*options.FindOneOptions) error {
 	ctx, cancel := d.Ctx(1)
 	defer cancel()
 
 	filter := bson.M{"_id": id}
-	err := d.C().FindOne(ctx, filter).Decode(target)
+	err := d.C().FindOne(ctx, filter, opts...).Decode(target)
 
 	if err != nil {
 		return d.Err(err)
@@ -47,24 +52,38 @@ func (d *DAO) FetchByID(id string, target interface{}) error {
 }
 
 // FetchByIDs fetches rows by IDs list
-func (d *DAO) FetchByIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
+func (d *DAOMg) FetchByIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
 	filter := bson.M{"_id": bson.M{"$in": ids}}
 	return d.FetchAllF(target, filter, opts...)
 }
 
 // FetchByExIDs fetches rows by exclude IDs list
-func (d *DAO) FetchByExIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
+func (d *DAOMg) FetchByExIDs(ids []string, target interface{}, opts ...*options.FindOptions) error {
 	filter := bson.M{"_id": bson.M{"$nin": ids}}
 	return d.FetchAllF(target, filter, opts...)
 }
 
+// FetchOne fetches one row by the filter
+func (d *DAOMg) FetchOne(target interface{}, filter interface{}, opts ...*options.FindOneOptions) error {
+	ctx, cancel := d.Ctx(1)
+	defer cancel()
+
+	err := d.C().FindOne(ctx, filter, opts...).Decode(target)
+
+	if err != nil {
+		return d.Err(err)
+	}
+
+	return nil
+}
+
 // FetchAll fetches all rows from cursor to the target
-func (d *DAO) FetchAll(target interface{}, opts ...*options.FindOptions) error {
+func (d *DAOMg) FetchAll(target interface{}, opts ...*options.FindOptions) error {
 	return d.FetchAllF(target, bson.M{}, opts...)
 }
 
 // FetchAllF fetches all rows from cursor with filter to the target
-func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error {
+func (d *DAOMg) FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error {
 	ctx, cancel := d.Ctx(10)
 	defer cancel()
 
@@ -87,17 +106,17 @@ func (d *DAO) FetchAllF(target interface{}, filter interface{}, opts ...*options
 }
 
 // C returns Collection
-func (d *DAO) C() *mongo.Collection {
+func (d *DAOMg) C() *mongo.Collection {
 	return d.c
 }
 
 // Ctx creates new timeout context
-func (d *DAO) Ctx(seconds uint) (context.Context, context.CancelFunc) {
+func (d *DAOMg) Ctx(seconds uint) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
 }
 
 // Err transforms and log an error if needed
-func (d *DAO) Err(err error) error {
+func (d *DAOMg) Err(err error) error {
 	if err == nil {
 		return nil
 	}
