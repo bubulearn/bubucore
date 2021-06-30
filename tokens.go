@@ -1,6 +1,7 @@
 package bubucore
 
 import (
+	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
@@ -87,9 +88,10 @@ func (c TokenClaimsDft) GetRelatedTokenID() string {
 // AccessTokenClaims is an access token claims
 type AccessTokenClaims struct {
 	TokenClaimsDft
-	Role           int    `json:"rl"`
-	Name           string `json:"nm,omitempty"`
-	RefreshTokenID string `json:"rti,omitempty"`
+	Role           int           `json:"rl"`
+	Name           string        `json:"nm,omitempty"`
+	RefreshTokenID string        `json:"rti,omitempty"`
+	Language       i18n.Language `json:"lng,omitempty"`
 }
 
 // Valid checks is data in claims is valid
@@ -106,4 +108,23 @@ func (c AccessTokenClaims) Valid() error {
 // GetRelatedTokenID returns related refresh token ID
 func (c AccessTokenClaims) GetRelatedTokenID() string {
 	return c.RefreshTokenID
+}
+
+// RefreshTokenClaims is an refresh token claims
+type RefreshTokenClaims struct {
+	TokenClaimsDft
+	AccessTokenID string `json:"ati"`
+}
+
+// Valid checks is data in claims is valid
+func (c RefreshTokenClaims) Valid() error {
+	if !utils.ValidateUUID(c.GetRelatedTokenID()) {
+		return ErrTokenInvalid
+	}
+	return c.TokenClaimsDft.Valid()
+}
+
+// GetRelatedTokenID returns related access token ID
+func (c RefreshTokenClaims) GetRelatedTokenID() string {
+	return c.AccessTokenID
 }

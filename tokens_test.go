@@ -2,6 +2,7 @@ package bubucore_test
 
 import (
 	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/i18n"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -13,6 +14,7 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 		RefreshTokenID: "145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
 		Role:           10,
 		Name:           "User Name",
+		Language:       i18n.LangRu,
 	}
 	valid.TokenClaimsDft = bubucore.TokenClaimsDft{
 		UserID: "03a4e59c-fb22-4bfa-8739-8062bcdd2005",
@@ -26,10 +28,10 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 		{},
 		{Role: 10, RefreshTokenID: ""},
 		{
-			bubucore.TokenClaimsDft{},
-			20,
-			"User",
-			"145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
+			TokenClaimsDft: bubucore.TokenClaimsDft{},
+			Role:           20,
+			Name:           "User",
+			RefreshTokenID: "145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
 		},
 		{
 			TokenClaimsDft: bubucore.TokenClaimsDft{

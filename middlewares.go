@@ -2,6 +2,7 @@ package bubucore
 
 import (
 	"bytes"
+	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/utils"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -37,6 +38,10 @@ func MiddlewareJWTAccess() gin.HandlerFunc {
 			ErrorResponseE(ctx, err, http.StatusUnauthorized)
 			ctx.Abort()
 			return
+		}
+
+		if claims.Language != "" {
+			i18n.GinSetLang(ctx, claims.Language)
 		}
 
 		ctx.Next()
