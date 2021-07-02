@@ -23,6 +23,9 @@ type DAO interface {
 
 	InsertOne(data interface{}, opts ...*options.InsertOneOptions) (id string, err error)
 
+	UpdateByID(id string, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
+	UpdateOne(filter interface{}, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
+
 	Ctx(seconds uint) (context.Context, context.CancelFunc)
 	Err(err error) error
 }
@@ -134,6 +137,38 @@ func (d *DAOMg) InsertOne(data interface{}, opts ...*options.InsertOneOptions) (
 	}
 
 	return "", nil
+}
+
+// UpdateByID updates one row by ID
+func (d *DAOMg) UpdateByID(id string, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	ctx, cancel := d.Ctx(3)
+	defer cancel()
+
+	upd := map[string]interface{}{
+		"$set": data,
+	}
+	doc, err := bson.Marshal(upd)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.C().UpdateByID(ctx, id, doc, opts...)
+}
+
+// UpdateOne updates one row
+func (d *DAOMg) UpdateOne(filter interface{}, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	ctx, cancel := d.Ctx(3)
+	defer cancel()
+
+	upd := map[string]interface{}{
+		"$set": data,
+	}
+	doc, err := bson.Marshal(upd)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.C().UpdateOne(ctx, filter, doc, opts...)
 }
 
 // C returns Collection
