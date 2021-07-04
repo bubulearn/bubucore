@@ -63,6 +63,45 @@ func TestNewSourceFromFile(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestLanguage_Filter(t *testing.T) {
+	langs := map[string]Language{
+		" en  ": LangEn,
+		"EN\t":  LangEn,
+		" ru ":  LangRu,
+		"Ru":    LangRu,
+	}
+
+	for inp, expected := range langs {
+		assert.Equal(t, expected, ParseLanguage(inp))
+	}
+}
+
+func TestLanguage_Validate(t *testing.T) {
+	valid := []string{
+		" en ",
+		"EN ",
+		" RU",
+		"ru\n\n",
+	}
+	invalid := []string{
+		"",
+		"  ",
+		" !ok ",
+		" ~~WTF** ",
+		"notacodeatall",
+	}
+
+	for _, v := range valid {
+		l := Language(v)
+		assert.NoError(t, l.Validate())
+	}
+
+	for _, v := range invalid {
+		l := Language(v)
+		assert.ErrorIs(t, l.Validate(), ErrInvalidLang)
+	}
+}
+
 func readTestSource() {
 	var err error
 	Source, err = NewSourceFromFile("i18n_test.yml")

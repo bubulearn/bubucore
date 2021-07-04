@@ -1,35 +1,35 @@
-package bubucore
+package tokens
 
 import (
+	"github.com/bubulearn/bubucore"
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/utils"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
 // ParseAccessToken parses access token and returns its claims
 func ParseAccessToken(tokenContent string) (*AccessTokenClaims, error) {
-	parsed, err := jwt.ParseWithClaims(tokenContent, &AccessTokenClaims{}, parseJWTKeyFunc)
+	parser := &jwt.Parser{
+		ValidMethods: []string{
+			jwt.SigningMethodHS256.Alg(),
+			jwt.SigningMethodHS384.Alg(),
+			jwt.SigningMethodHS512.Alg(),
+		},
+	}
+	parsed, err := parser.ParseWithClaims(tokenContent, &AccessTokenClaims{}, parseJWTKeyFunc)
 	if err != nil {
-		logrus.Warn("failed to parse JWT (access token): ", tokenContent, ": ", err)
-		return nil, ErrTokenInvalid
+		log.Warn("failed to parse JWT (access token): ", tokenContent, ": ", err)
+		return nil, bubucore.ErrTokenInvalid
 	}
 	claims := parsed.Claims.(*AccessTokenClaims)
-	err = claims.Valid()
-	if err != nil {
-		logrus.Warn("failed to validate JWT (access token): ", tokenContent, ": ", err)
-		return nil, ErrTokenInvalid
-	}
 	return claims, nil
 }
 
 // parseJWTKeyFunc returns JWT password key
-func parseJWTKeyFunc(token *jwt.Token) (interface{}, error) {
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, ErrTokenUnsupported
-	}
-	return Opt.JWTPassword, nil
+func parseJWTKeyFunc(_ *jwt.Token) (interface{}, error) {
+	return bubucore.Opt.JWTPassword, nil
 }
 
 // TokenClaims is token claims interface
@@ -59,22 +59,22 @@ func (c TokenClaimsDft) GetUserID() string {
 // Valid checks is data in claims is valid
 func (c TokenClaimsDft) Valid() error {
 	if !utils.ValidateUUID(c.GetUserID()) {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 	if !utils.ValidateUUID(c.GetTokenID()) {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 
 	now := time.Now().Unix()
 
 	if !c.VerifyExpiresAt(now, true) {
-		return ErrTokenExpired
+		return bubucore.ErrTokenExpired
 	}
 	if !c.VerifyIssuedAt(now, false) {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 	if c.VerifyNotBefore(now, false) == false {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 
 	return nil
@@ -97,10 +97,10 @@ type AccessTokenClaims struct {
 // Valid checks is data in claims is valid
 func (c AccessTokenClaims) Valid() error {
 	if c.Role == 0 {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 	if c.GetRelatedTokenID() != "" && !utils.ValidateUUID(c.GetRelatedTokenID()) {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 	return c.TokenClaimsDft.Valid()
 }
@@ -119,7 +119,7 @@ type RefreshTokenClaims struct {
 // Valid checks is data in claims is valid
 func (c RefreshTokenClaims) Valid() error {
 	if !utils.ValidateUUID(c.GetRelatedTokenID()) {
-		return ErrTokenInvalid
+		return bubucore.ErrTokenInvalid
 	}
 	return c.TokenClaimsDft.Valid()
 }

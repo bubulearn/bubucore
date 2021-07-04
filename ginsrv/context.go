@@ -1,0 +1,94 @@
+package ginsrv
+
+import (
+	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/i18n"
+	"github.com/bubulearn/bubucore/tokens"
+	"github.com/bubulearn/bubucore/utils"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"net/http"
+)
+
+// NewContextHandler creates new ContextHandler instance
+func NewContextHandler(ctx *gin.Context) *ContextHandler {
+	return &ContextHandler{
+		Context: ctx,
+	}
+}
+
+// ContextHandler is a gin context wrapper
+type ContextHandler struct {
+	*gin.Context
+}
+
+// C returns gin.Context instance
+func (h *ContextHandler) C() *gin.Context {
+	return h.Context
+}
+
+// GetAccessClaims returns AccessTokenClaims from the current gin context
+func (h *ContextHandler) GetAccessClaims() (*tokens.AccessTokenClaims, error) {
+	c, ok := h.Get(KeyAccessClaims)
+	if !ok {
+		log.Warn("no claims initialized")
+		return nil, bubucore.ErrTokenInvalid
+	}
+	claims, ok := c.(*tokens.AccessTokenClaims)
+	if !ok {
+		log.Warn("unexpected claims type")
+		return nil, bubucore.ErrTokenInvalid
+	}
+	return claims, nil
+}
+
+// GetI18nLang gets language from gin context
+func (h *ContextHandler) GetI18nLang() i18n.Language {
+	v, ok := h.Get(KeyI18nLang)
+	if !ok {
+		return i18n.GetDefaultLang()
+	}
+	return i18n.ParseLanguage(v)
+}
+
+// SetI18nLang set lang for gix context
+func (h *ContextHandler) SetI18nLang(lang i18n.Language) {
+	h.Set(KeyI18nLang, lang)
+}
+
+// ExtractBearerToken extracts token from the 'Authorization: Bearer <token>' header
+func (h *ContextHandler) ExtractBearerToken() (string, error) {
+	return utils.ExtractBearerToken(h.Request)
+}
+
+// Err sends error as response
+func (h *ContextHandler) Err(err error) {
+	status := http.StatusInternalServerError
+	e, ok := err.(*bubucore.Error)
+	if ok {
+		if e.Code >= 400 && e.Code <= 599 {
+			status = e.Code
+		}
+	}
+	h.JSON(
+		status,
+		err,
+	)
+}
+
+// ErrS sends error message as response
+func (h *ContextHandler) ErrS(msg string, status int) {
+	h.Err(bubucore.NewError(status, msg))
+}
+
+// ErrWithStatus sends error as response with custom status
+func (h *ContextHandler) ErrWithStatus(err error, status int) {
+	e, ok := err.(*bubucore.Error)
+	if !ok {
+		e = bubucore.NewError(status, err.Error())
+	}
+	h.JSON(
+		status,
+		e,
+	)
+}

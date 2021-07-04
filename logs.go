@@ -5,9 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // Log custom fields
@@ -86,58 +83,3 @@ func (h *LogDftFieldsHook) Fire(e *log.Entry) error {
 }
 
 // endregion GIN BODY
-
-// region GIN LOG FORMATTER
-
-// GinLogFormatter is a formatter for the gin log records
-func GinLogFormatter(param gin.LogFormatterParams) string {
-	data := map[string]string{
-		"@timestamp":         param.TimeStamp.Format(time.RFC3339),
-		"ip":                 param.ClientIP,
-		"method":             param.Method,
-		LogFieldPath:         param.Path,
-		"proto":              param.Request.Proto,
-		"status":             strconv.FormatInt(int64(param.StatusCode), 10),
-		"latency":            strconv.FormatFloat(param.Latency.Seconds(), 'f', 8, 64),
-		"latency_fmt":        param.Latency.String(),
-		"agent":              param.Request.UserAgent(),
-		"error":              param.ErrorMessage,
-		"response_body_size": strconv.FormatInt(int64(param.BodySize), 10),
-	}
-
-	if param.StatusCode >= 400 && param.Request.Body != nil {
-		buf := new(strings.Builder)
-		_, _ = io.Copy(buf, param.Request.Body)
-		data["request_body"] = buf.String()
-		defer func() {
-			_ = param.Request.Body.Close()
-		}()
-	}
-
-	data[LogFieldType] = LogTypeHTTPSrv
-	data[LogFieldService] = Opt.ServiceName
-	data[LogFieldHostname] = Opt.GetHostname()
-	data[LogFieldAPIVersion] = Opt.APIVersion
-
-	if param.StatusCode >= 500 {
-		data[LogFieldLevel] = "error"
-	} else if param.StatusCode >= 400 {
-		data[LogFieldLevel] = "warning"
-	} else {
-		data[LogFieldLevel] = "info"
-	}
-
-	// not using marshalling for speed-up
-	values := make([]string, len(data))
-	i := 0
-	for key, val := range data {
-		val = strings.ReplaceAll(val, `"`, `\"`)
-		val = strings.TrimSpace(val)
-		values[i] = `"` + key + `":"` + val + `"`
-		i++
-	}
-
-	return "{" + strings.Join(values, ",") + "}\n"
-}
-
-// endregion GIN LOG FORMATTER

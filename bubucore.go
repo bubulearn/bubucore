@@ -1,10 +1,8 @@
 package bubucore
 
 import (
-	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"net/http"
 	"os"
 )
 
@@ -98,34 +96,4 @@ func ReadConfig() (*viper.Viper, error) {
 	}
 
 	return conf, nil
-}
-
-// GetDefaultRouter creates new gin router with default middlewares
-func GetDefaultRouter() *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.New()
-
-	// Recover panics with formatted log
-	router.Use(gin.CustomRecovery(func(ctx *gin.Context, recovered interface{}) {
-		log.Error(recovered)
-		if s, ok := recovered.(string); ok {
-			err := NewError(http.StatusInternalServerError, s)
-			ErrorResponse(ctx, err)
-		}
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-	}))
-
-	// JSON-formatted logs
-	router.Use(gin.LoggerWithFormatter(GinLogFormatter))
-	router.Use(MiddlewareLogBody())
-
-	router.NoRoute(func(ctx *gin.Context) {
-		ctx.JSON(
-			http.StatusNotFound,
-			NewError(http.StatusNotFound, "unknown endpoint"),
-		)
-	})
-
-	return router
 }

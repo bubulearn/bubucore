@@ -8,6 +8,7 @@ import (
 var (
 	ErrUserBlocked      = NewError(http.StatusForbidden, "requested user is blocked")
 	ErrPassFailed       = NewError(http.StatusUnauthorized, "password is invalid")
+	ErrRoleNotAllowed   = NewError(http.StatusForbidden, "unexpected user role")
 	ErrTokenInvalid     = NewError(http.StatusUnauthorized, "token is invalid")
 	ErrTokenExpired     = NewError(http.StatusUnauthorized, "token is expired")
 	ErrTokenUnsupported = NewError(http.StatusUnprocessableEntity, "unsupported sign method")
