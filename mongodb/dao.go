@@ -26,6 +26,9 @@ type DAO interface {
 	UpdateByID(id string, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 	UpdateOne(filter interface{}, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 
+	DeleteByID(id string, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
+	DeleteOne(filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
+
 	Ctx(seconds uint) (context.Context, context.CancelFunc)
 	Err(err error) error
 }
@@ -169,6 +172,19 @@ func (d *DAOMg) UpdateOne(filter interface{}, data interface{}, opts ...*options
 	}
 
 	return d.C().UpdateOne(ctx, filter, doc, opts...)
+}
+
+// DeleteByID deletes one row by ID
+func (d *DAOMg) DeleteByID(id string, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	filter := bson.M{"_id": id}
+	return d.DeleteOne(filter, opts...)
+}
+
+// DeleteOne deletes one row
+func (d *DAOMg) DeleteOne(filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	ctx, cancel := d.Ctx(3)
+	defer cancel()
+	return d.C().DeleteOne(ctx, filter, opts...)
 }
 
 // C returns Collection
