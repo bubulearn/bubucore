@@ -37,6 +37,7 @@ func (r *Request) String() string {
 
 // SetWhere param
 func (r *Request) SetWhere(where string) {
+	r.initParams()
 	r.params.Set("where", where)
 }
 
@@ -52,6 +53,8 @@ func (r *Request) SetPageSize(pageSize uint) {
 
 // setPagination params
 func (r *Request) setPagination() {
+	r.initParams()
+
 	if r.pageSize == 0 {
 		r.pageSize = 10
 	}
@@ -67,18 +70,21 @@ func (r *Request) setPagination() {
 
 // SetRelations to load
 func (r *Request) SetRelations(relations ...string) {
+	r.initParams()
 	rs := strings.Join(relations, ",")
 	r.params.Set("loadRelations", rs)
 }
 
 // SetRelationsSizes page size & depth
 func (r *Request) SetRelationsSizes(pageSize uint, depth uint) {
+	r.initParams()
 	r.params.Set("relationsPageSize", strconv.FormatUint(uint64(pageSize), 10))
 	r.params.Set("relationsDepth", strconv.FormatUint(uint64(depth), 10))
 }
 
 // SetOrder sorting
 func (r *Request) SetOrder(field string, asc bool) {
+	r.initParams()
 	s := "`" + field + "` "
 	if asc {
 		s += " asc"
@@ -86,4 +92,11 @@ func (r *Request) SetOrder(field string, asc bool) {
 		s += " desc"
 	}
 	r.params.Set("sortBy", s)
+}
+
+// initParams initializes params map
+func (r *Request) initParams() {
+	if r.params == nil {
+		r.params = make(url.Values)
+	}
 }
