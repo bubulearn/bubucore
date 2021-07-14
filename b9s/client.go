@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	host = "https://api.backendless.com/"
+	host = "https://api.backendless.com"
 )
 
 // NewClient creates a Client instance
