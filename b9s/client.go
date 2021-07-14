@@ -2,9 +2,12 @@
 package b9s
 
 import (
+	"github.com/bubulearn/bubucore"
 	jsoniter "github.com/json-iterator/go"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -53,6 +56,14 @@ func (c *Client) Do(req *Request, target interface{}) error {
 	resp, err := c.client().Do(r)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		bb, _ := ioutil.ReadAll(resp.Body)
+		return bubucore.NewError(
+			http.StatusBadGateway,
+			"b9s: got code "+strconv.FormatInt(int64(resp.StatusCode), 10)+"; resp: "+string(bb),
+		)
 	}
 
 	err = jsoniter.NewDecoder(resp.Body).Decode(target)
