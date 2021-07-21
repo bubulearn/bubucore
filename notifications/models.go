@@ -2,6 +2,7 @@ package notifications
 
 import (
 	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/i18n"
 	"net/http"
 	"net/mail"
 	"strings"
@@ -33,6 +34,8 @@ type Email struct {
 
 	Subject        string                 `json:"subject,omitempty"`
 	TemplateValues map[string]interface{} `json:"template_values,omitempty"`
+
+	Language i18n.Language `json:"language,omitempty"`
 
 	recipients []*mail.Address
 }
