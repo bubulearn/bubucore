@@ -44,6 +44,7 @@ type Email struct {
 func (n *Email) Filter() {
 	n.Subject = strings.TrimSpace(n.Subject)
 	n.TemplateName = strings.TrimSpace(n.TemplateName)
+	n.Language = i18n.ParseLanguage(n.Language)
 }
 
 // Validate checks if values are OK
