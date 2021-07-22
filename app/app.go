@@ -96,8 +96,8 @@ func (a *App) GetRedis() *redis.Client {
 	return r
 }
 
-// Run starts the App
-func (a *App) Run() {
+// Init initializes App without starting the server
+func (a *App) Init() {
 	if a.prepareCtnFn != nil {
 		err := a.prepareCtnFn(a.ctn)
 		if err != nil {
@@ -106,7 +106,6 @@ func (a *App) Run() {
 	}
 
 	router := a.GetRouter()
-	conf := a.GetConfig()
 
 	if a.initRouterFn != nil {
 		err := a.initRouterFn(router)
@@ -114,10 +113,27 @@ func (a *App) Run() {
 			log.Fatal("[bubucore.App] failed to init router: ", err)
 		}
 	}
+}
+
+// Run starts the App's server
+func (a *App) Run() {
+	a.Init()
+	defer a.Close()
+
+	router := a.GetRouter()
+	conf := a.GetConfig()
 
 	log.Info("[bubucore.App] starting gin server")
 
 	err := router.Run(":" + conf.Port)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Close finalizes the App
+func (a *App) Close() {
+	err := a.ctn.Delete()
 	if err != nil {
 		log.Fatal(err)
 	}
