@@ -53,6 +53,11 @@ func (a *App) SetPrepareContainerFn(fn PrepareContainerFn) {
 	a.prepareCtnFn = fn
 }
 
+// GetContainer returns an App's di.Container instance
+func (a *App) GetContainer() di.Container {
+	return a.ctn
+}
+
 // GetConfigViper returns config viper.Viper from the DI container
 func (a *App) GetConfigViper() *viper.Viper {
 	return a.ctn.Get(DIConfigViper).(*viper.Viper)
