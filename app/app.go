@@ -29,8 +29,8 @@ func NewApp(ctn *di.Container) *App {
 	}
 }
 
-// InitRouterFn is a function to prepare router before run
-type InitRouterFn = func(router *gin.Engine) error
+// PrepareRouterFn is a function to prepare router before run
+type PrepareRouterFn = func(router *gin.Engine, ctn di.Container) error
 
 // PrepareContainerFn is a function to prepare DI container before run
 type PrepareContainerFn = func(ctn di.Container) error
@@ -39,13 +39,13 @@ type PrepareContainerFn = func(ctn di.Container) error
 type App struct {
 	ctn di.Container
 
-	initRouterFn InitRouterFn
-	prepareCtnFn PrepareContainerFn
+	prepareCtnFn    PrepareContainerFn
+	prepareRouterFn PrepareRouterFn
 }
 
-// SetInitRouterFn sets init router hook
-func (a *App) SetInitRouterFn(fn InitRouterFn) {
-	a.initRouterFn = fn
+// SetPrepareRouterFn sets init router hook
+func (a *App) SetPrepareRouterFn(fn PrepareRouterFn) {
+	a.prepareRouterFn = fn
 }
 
 // SetPrepareContainerFn sets prepare DI container hook
@@ -112,8 +112,8 @@ func (a *App) Init() {
 
 	router := a.GetRouter()
 
-	if a.initRouterFn != nil {
-		err := a.initRouterFn(router)
+	if a.prepareRouterFn != nil {
+		err := a.prepareRouterFn(router, a.ctn)
 		if err != nil {
 			log.Fatal("[bubucore.App] failed to init router: ", err)
 		}
