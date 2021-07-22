@@ -51,5 +51,5 @@ func (l *Language) String() string {
 
 // T is a Translations.GetText alias
 func T(textOrKey string, lang Language, tplData interface{}) string {
-	return Source.Translations.GetText(textOrKey, lang, tplData)
+	return Source.T(textOrKey, lang, tplData)
 }

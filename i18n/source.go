@@ -34,3 +34,8 @@ type TextsSource struct {
 	DefaultLang  Language     `json:"default_lang" yaml:"default_lang"`
 	Translations Translations `json:"translations" yaml:"translations"`
 }
+
+// T is a Translations.GetText alias
+func (s *TextsSource) T(textOrKey string, lang Language, tplData interface{}) string {
+	return s.Translations.GetText(textOrKey, lang, tplData)
+}

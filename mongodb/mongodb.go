@@ -8,18 +8,16 @@ import (
 	"time"
 )
 
-// ClientOptions is a bubulearn mongo client options.
-// Deprecated, use Options instead.
-type ClientOptions struct {
+// Options is a MongoDB options
+type Options struct {
 	Hosts    []string
 	Database string
 	User     string
 	Password string
 }
 
-// CreateMongoClient creates new mongo client and database instances.
-// Deprecated, use NewMongoDB instead.
-func CreateMongoClient(opt *ClientOptions) (*mongo.Client, *mongo.Database, error) {
+// NewMongoDB creates MongoDB instance
+func NewMongoDB(opt *Options) (*MongoDB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -39,15 +37,32 @@ func CreateMongoClient(opt *ClientOptions) (*mongo.Client, *mongo.Database, erro
 
 	client, err := mongo.Connect(ctx, mOpt)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	db := client.Database(opt.Database)
 
-	return client, db, nil
+	return &MongoDB{
+		client: client,
+		Db:     db,
+	}, nil
+}
+
+// MongoDB manages mongo connection
+type MongoDB struct {
+	client *mongo.Client
+	Db     *mongo.Database
+}
+
+// Close closes db connection context
+func (m *MongoDB) Close() error {
+	if m.client != nil {
+		return m.client.Disconnect(context.Background())
+	}
+	return nil
 }

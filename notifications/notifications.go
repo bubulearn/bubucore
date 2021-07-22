@@ -32,13 +32,19 @@ func NewClient(host string, token string) *Client {
 
 // Client is a notifications service client
 type Client struct {
-	host    string
-	token   string
+	host  string
+	token string
+
 	_client *http.Client
 }
 
 // Send sends notification request
 func (c *Client) Send(endpoint string, data interface{}) error {
+	err := c.checkPreconditions()
+	if err != nil {
+		return err
+	}
+
 	endpoint = "/" + strings.TrimLeft(endpoint, "/")
 
 	body, err := jsoniter.Marshal(data)
@@ -93,6 +99,25 @@ func (c *Client) SendEmail(n Email) error {
 // SendAppReport sends notification about app report
 func (c *Client) SendAppReport(msg string) error {
 	return c.SendPlainText(EndpointAppReport, msg)
+}
+
+// Close finalizes the Client
+func (c *Client) Close() error {
+	if c._client != nil {
+		c._client.CloseIdleConnections()
+	}
+	return nil
+}
+
+// checkPreconditions validates if Client data is ok
+func (c *Client) checkPreconditions() error {
+	if c.host == "" {
+		return bubucore.NewError(http.StatusInternalServerError, "no notifications host defined")
+	}
+	if c.token == "" {
+		return bubucore.NewError(http.StatusInternalServerError, "no notifications token defined")
+	}
+	return nil
 }
 
 // client returns http.Client instance
