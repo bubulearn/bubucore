@@ -3,13 +3,13 @@ package app
 import (
 	"context"
 	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/di"
 	"github.com/bubulearn/bubucore/ginsrv"
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/mongodb"
 	"github.com/bubulearn/bubucore/notifications"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/sarulabs/di"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"time"
@@ -39,79 +39,11 @@ const (
 	DIRedis = "redis"
 )
 
-// BuildContainer builds Container with di.Builder
-func BuildContainer(builder *di.Builder) *Container {
-	c := builder.Build()
-	return &Container{
-		Container: c,
-	}
-}
+// GetDefaultDIBuilder returns default DI builder
+func GetDefaultDIBuilder() (*di.Builder, error) {
+	builder := &di.Builder{}
 
-// BuildDefaultContainer builds Container with default di.Builder
-func BuildDefaultContainer() *Container {
-	builder, err := DIBuilderDft()
-	if err != nil {
-		log.Fatal(logTag, "failed to build default DI container: ", err)
-	}
-	return BuildContainer(builder)
-}
-
-// Container is a DI container
-type Container struct {
-	di.Container
-}
-
-// GetConfigViper returns config viper.Viper from the DI container
-func (c *Container) GetConfigViper() *viper.Viper {
-	return c.Get(DIConfigViper).(*viper.Viper)
-}
-
-// GetConfig returns Config from the DI container
-func (c *Container) GetConfig() *Config {
-	return c.Get(DIConfig).(*Config)
-}
-
-// GetI18n returns i18n.TextsSource from the DI container
-func (c *Container) GetI18n() *i18n.TextsSource {
-	return c.Get(DII18n).(*i18n.TextsSource)
-}
-
-// GetRouter returns gin.Engine router from the DI container
-func (c *Container) GetRouter() *gin.Engine {
-	return c.Get(DIRouter).(*gin.Engine)
-}
-
-// GetNotifications returns notifications.Client from the DI container
-func (c *Container) GetNotifications() *notifications.Client {
-	return c.Get(DINotifications).(*notifications.Client)
-}
-
-// GetMongoDB returns mongodb.MongoDB from the DI container
-func (c *Container) GetMongoDB() *mongodb.MongoDB {
-	m := c.Get(DIMongo).(*mongodb.MongoDB)
-	if m == nil {
-		log.Fatal(logTag, "attempt to access nil MongoDB instance")
-	}
-	return m
-}
-
-// GetRedis returns redis.Client from the DI container
-func (c *Container) GetRedis() *redis.Client {
-	r := c.Get(DIRedis).(*redis.Client)
-	if r == nil {
-		log.Fatal(logTag, "attempt to access nil redis client instance")
-	}
-	return r
-}
-
-// DIBuilderDft returns default DI builder
-func DIBuilderDft() (*di.Builder, error) {
-	builder, err := di.NewBuilder()
-	if err != nil {
-		return nil, err
-	}
-
-	err = builder.Add(DIDefConfigViper(), DIDefConfig(), DIDefI18n(), DIDefRouter())
+	err := builder.Add(DIDefConfigViper(), DIDefConfig(), DIDefI18n(), DIDefRouter())
 	if err != nil {
 		return nil, err
 	}
@@ -129,11 +61,26 @@ func DIBuilderDft() (*di.Builder, error) {
 	return builder, nil
 }
 
+// BuildDefaultContainer builds Container with default di.Builder
+func BuildDefaultContainer() *di.Container {
+	builder, err := GetDefaultDIBuilder()
+	if err != nil {
+		log.Fatal(logTag, "failed to create default DI container: ", err)
+	}
+
+	ctn, err := builder.Build()
+	if err != nil {
+		log.Fatal(logTag, "failed to build default DI container: ", err)
+	}
+
+	return ctn
+}
+
 // DIDefConfigViper returns app config read from config file to the viper.Viper instance
 func DIDefConfigViper() di.Def {
 	return di.Def{
 		Name: DIConfigViper,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			return bubucore.ReadConfig()
 		},
 	}
@@ -143,7 +90,7 @@ func DIDefConfigViper() di.Def {
 func DIDefConfig() di.Def {
 	return di.Def{
 		Name: DIConfig,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			vpr := ctn.Get(DIConfigViper).(*viper.Viper)
 
 			conf := &Config{}
@@ -158,7 +105,7 @@ func DIDefConfig() di.Def {
 func DIDefI18n() di.Def {
 	return di.Def{
 		Name: DII18n,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			var err error
 			conf := ctn.Get(DIConfig).(*Config)
 			if conf.I18nFile != "" {
@@ -173,7 +120,7 @@ func DIDefI18n() di.Def {
 func DIDefRouter() di.Def {
 	return di.Def{
 		Name: DIRouter,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			return ginsrv.GetDefaultRouter(), nil
 		},
 	}
@@ -183,7 +130,7 @@ func DIDefRouter() di.Def {
 func DIDefNotifications() di.Def {
 	return di.Def{
 		Name: DINotifications,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			conf := ctn.Get(DIConfig).(*Config)
 			return notifications.NewClient(conf.NotificationsHost, conf.NotificationsToken), nil
 		},
@@ -198,7 +145,7 @@ func DIDefNotifications() di.Def {
 func DIDefMongo() di.Def {
 	return di.Def{
 		Name: DIMongo,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			conf := ctn.Get(DIConfig).(*Config)
 			if conf.MongoHost == "" {
 				return nil, nil
@@ -226,7 +173,7 @@ func DIDefMongo() di.Def {
 func DIDefRedis() di.Def {
 	return di.Def{
 		Name: DIRedis,
-		Build: func(ctn di.Container) (interface{}, error) {
+		Build: func(ctn *di.Container) (interface{}, error) {
 			conf := ctn.Get(DIConfig).(*Config)
 			if conf.RedisHost == "" {
 				return nil, nil
@@ -256,4 +203,47 @@ func DIDefRedis() di.Def {
 			return nil
 		},
 	}
+}
+
+// DIGetConfigViper returns config viper.Viper from the DI container
+func DIGetConfigViper(ctn *di.Container) *viper.Viper {
+	return ctn.Get(DIConfigViper).(*viper.Viper)
+}
+
+// DIGetConfig returns Config from the DI container
+func DIGetConfig(ctn *di.Container) *Config {
+	return ctn.Get(DIConfig).(*Config)
+}
+
+// DIGetI18n returns i18n.TextsSource from the DI container
+func DIGetI18n(ctn *di.Container) *i18n.TextsSource {
+	return ctn.Get(DII18n).(*i18n.TextsSource)
+}
+
+// DIGetRouter returns gin.Engine router from the DI container
+func DIGetRouter(ctn *di.Container) *gin.Engine {
+	return ctn.Get(DIRouter).(*gin.Engine)
+}
+
+// DIGetNotifications returns notifications.Client from the DI container
+func DIGetNotifications(ctn *di.Container) *notifications.Client {
+	return ctn.Get(DINotifications).(*notifications.Client)
+}
+
+// DIGetMongoDB returns mongodb.MongoDB from the DI container
+func DIGetMongoDB(ctn *di.Container) *mongodb.MongoDB {
+	m := ctn.Get(DIMongo).(*mongodb.MongoDB)
+	if m == nil {
+		log.Fatal(logTag, "attempt to access nil MongoDB instance")
+	}
+	return m
+}
+
+// DIGetRedis returns redis.Client from the DI container
+func DIGetRedis(ctn *di.Container) *redis.Client {
+	r := ctn.Get(DIRedis).(*redis.Client)
+	if r == nil {
+		log.Fatal(logTag, "attempt to access nil redis client instance")
+	}
+	return r
 }

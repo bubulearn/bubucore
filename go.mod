@@ -8,7 +8,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/google/uuid v1.2.0
 	github.com/json-iterator/go v1.1.11
-	github.com/sarulabs/di v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.0
 	github.com/stretchr/testify v1.7.0

@@ -2,6 +2,7 @@ package ginsrv
 
 import (
 	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/di"
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/tokens"
 	"github.com/bubulearn/bubucore/utils"
@@ -25,6 +26,15 @@ type ContextHandler struct {
 // C returns gin.Context instance
 func (h *ContextHandler) C() *gin.Context {
 	return h.Context
+}
+
+// GetContainer returns di.Container instance
+func (h *ContextHandler) GetContainer() *di.Container {
+	ctn, ok := h.Get(KeyDIContainer)
+	if !ok {
+		panic("attempt to access non-initialized DI Container")
+	}
+	return ctn.(*di.Container)
 }
 
 // GetAccessClaims returns AccessTokenClaims from the current gin context

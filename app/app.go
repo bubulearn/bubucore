@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/bubulearn/bubucore/di"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -8,8 +9,8 @@ import (
 const logTag = "[bubucore.App] "
 
 // NewApp creates new App instance.
-// If ctn is nil, DIBuilderDft() will be called.
-func NewApp(ctn *Container) *App {
+// If ctn is nil, GetDefaultDIBuilder() will be called.
+func NewApp(ctn *di.Container) *App {
 	if ctn == nil {
 		ctn = BuildDefaultContainer()
 	}
@@ -19,19 +20,64 @@ func NewApp(ctn *Container) *App {
 }
 
 // PrepareRouterFn is a function to prepare router before run
-type PrepareRouterFn = func(router *gin.Engine, ctn *Container) error
+type PrepareRouterFn func(router *gin.Engine, app *App) error
 
 // PrepareContainerFn is a function to prepare DI container before run
-type PrepareContainerFn = func(ctn *Container) error
+type PrepareContainerFn func(app *App) error
 
 // App is a Bubulearn service app
 type App struct {
-	ctn *Container
+	ctn *di.Container
 
 	prepareCtnFn    PrepareContainerFn
 	prepareRouterFn PrepareRouterFn
 
 	initialized bool
+}
+
+// Init initializes App without starting the server
+func (a *App) Init() {
+	if a.initialized {
+		return
+	}
+	a.initialized = true
+
+	if a.prepareCtnFn != nil {
+		err := a.prepareCtnFn(a)
+		if err != nil {
+			log.Fatal(logTag, "failed to prepare DI container: ", err)
+		}
+	}
+
+	router := DIGetRouter(a.ctn)
+
+	if a.prepareRouterFn != nil {
+		err := a.prepareRouterFn(router, a)
+		if err != nil {
+			log.Fatal(logTag, "failed to init router: ", err)
+		}
+	}
+}
+
+// Run starts the App's server
+func (a *App) Run() {
+	a.Init()
+	defer a.Close()
+
+	router := DIGetRouter(a.ctn)
+	conf := DIGetConfig(a.ctn)
+
+	log.Info(logTag, "starting gin server")
+
+	err := router.Run(":" + conf.Port)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Close finalizes the App
+func (a *App) Close() {
+	a.ctn.Close()
 }
 
 // SetPrepareRouterFn sets init router hook
@@ -45,58 +91,10 @@ func (a *App) SetPrepareContainerFn(fn PrepareContainerFn) {
 }
 
 // C returns an App's Container instance
-func (a *App) C() *Container {
+func (a *App) C() *di.Container {
 	if a.ctn == nil {
 		log.Warn(logTag, "nil Container given to the App, switching to default")
 		a.ctn = BuildDefaultContainer()
 	}
 	return a.ctn
-}
-
-// Init initializes App without starting the server
-func (a *App) Init() {
-	if a.initialized {
-		return
-	}
-	a.initialized = true
-
-	if a.prepareCtnFn != nil {
-		err := a.prepareCtnFn(a.ctn)
-		if err != nil {
-			log.Fatal(logTag, "failed to prepare DI container: ", err)
-		}
-	}
-
-	router := a.C().GetRouter()
-
-	if a.prepareRouterFn != nil {
-		err := a.prepareRouterFn(router, a.ctn)
-		if err != nil {
-			log.Fatal(logTag, "failed to init router: ", err)
-		}
-	}
-}
-
-// Run starts the App's server
-func (a *App) Run() {
-	a.Init()
-	defer a.Close()
-
-	router := a.C().GetRouter()
-	conf := a.C().GetConfig()
-
-	log.Info(logTag, "starting gin server")
-
-	err := router.Run(":" + conf.Port)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Close finalizes the App
-func (a *App) Close() {
-	err := a.ctn.Delete()
-	if err != nil {
-		log.Fatal(err)
-	}
 }

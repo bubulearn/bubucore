@@ -3,6 +3,7 @@ package ginsrv
 import (
 	"bytes"
 	"github.com/bubulearn/bubucore"
+	"github.com/bubulearn/bubucore/di"
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/tokens"
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,9 @@ const (
 
 	// KeyI18nLang is a context key for language
 	KeyI18nLang = "BubuI18nLang"
+
+	// KeyDIContainer is a context key for a DI di.Container
+	KeyDIContainer = "BubuDIContainer"
 )
 
 // M returns Middlewares instance
@@ -35,6 +39,13 @@ var middlewares *Middlewares
 
 // Middlewares contains middlewares functions
 type Middlewares struct {
+}
+
+// SetDIContainer is a middleware to set app.App instance to the context
+func (m *Middlewares) SetDIContainer(ctn *di.Container) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(KeyDIContainer, ctn)
+	}
 }
 
 // JWTAccess is a authorization by the Access token.
