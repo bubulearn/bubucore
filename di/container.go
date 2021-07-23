@@ -7,7 +7,13 @@ import (
 
 // Container is a dependency container
 type Container struct {
-	defs map[string]Def
+	defs DefsMap
+}
+
+// Has checks if dependency is registered in Container
+func (c *Container) Has(name string) bool {
+	_, ok := c.defs[name]
+	return ok
 }
 
 // Get returns built dependency. Panics on error.

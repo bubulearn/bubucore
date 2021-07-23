@@ -2,6 +2,9 @@ package di
 
 import "errors"
 
+// DefsMap is a dependencies definitions map
+type DefsMap map[string]Def
+
 // ValidateFn is a dependency validation function
 type ValidateFn func(ctn *Container) error
 

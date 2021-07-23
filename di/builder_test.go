@@ -65,6 +65,9 @@ func TestBuilder_Build(t *testing.T) {
 		di.Def{
 			Name: "test5",
 			Build: func(ctn *di.Container) (interface{}, error) {
+				if !ctn.Has("test1") {
+					return nil, errors.New("unexpected build order")
+				}
 				return "testval5", nil
 			},
 			Lazy: true,
