@@ -20,10 +20,10 @@ func NewApp(ctn *di.Container) *App {
 }
 
 // PrepareRouterFn is a function to prepare router before run
-type PrepareRouterFn func(router *gin.Engine, app *App) error
+type PrepareRouterFn func(router *gin.Engine, ctn *di.Container) error
 
 // PrepareContainerFn is a function to prepare DI container before run
-type PrepareContainerFn func(app *App) error
+type PrepareContainerFn func(ctn *di.Container) error
 
 // App is a Bubulearn service app
 type App struct {
@@ -43,16 +43,16 @@ func (a *App) Init() {
 	a.initialized = true
 
 	if a.prepareCtnFn != nil {
-		err := a.prepareCtnFn(a)
+		err := a.prepareCtnFn(a.C())
 		if err != nil {
 			log.Fatal(logTag, "failed to prepare DI container: ", err)
 		}
 	}
 
-	router := DIGetRouter(a.ctn)
+	router := DIGetRouter(a.C())
 
 	if a.prepareRouterFn != nil {
-		err := a.prepareRouterFn(router, a)
+		err := a.prepareRouterFn(router, a.C())
 		if err != nil {
 			log.Fatal(logTag, "failed to init router: ", err)
 		}
