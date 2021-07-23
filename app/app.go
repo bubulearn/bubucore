@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/bubulearn/bubucore/di"
+	"github.com/bubulearn/bubucore/ginsrv"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -50,6 +51,7 @@ func (a *App) Init() {
 	}
 
 	router := DIGetRouter(a.C())
+	router.Use(ginsrv.M().SetDIContainer(a.C()))
 
 	if a.prepareRouterFn != nil {
 		err := a.prepareRouterFn(router, a.C())
