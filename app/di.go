@@ -7,8 +7,10 @@ import (
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/mongodb"
 	"github.com/bubulearn/bubucore/notifications"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/sarulabs/di"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -36,6 +38,71 @@ const (
 	// DIRedis contains redis.Client instance, or nil if no redis host provided in config
 	DIRedis = "redis"
 )
+
+// BuildContainer builds Container with di.Builder
+func BuildContainer(builder *di.Builder) *Container {
+	c := builder.Build()
+	return &Container{
+		Container: c,
+	}
+}
+
+// BuildDefaultContainer builds Container with default di.Builder
+func BuildDefaultContainer() *Container {
+	builder, err := DIBuilderDft()
+	if err != nil {
+		log.Fatal(logTag, "failed to build default DI container: ", err)
+	}
+	return BuildContainer(builder)
+}
+
+// Container is a DI container
+type Container struct {
+	di.Container
+}
+
+// GetConfigViper returns config viper.Viper from the DI container
+func (c *Container) GetConfigViper() *viper.Viper {
+	return c.Get(DIConfigViper).(*viper.Viper)
+}
+
+// GetConfig returns Config from the DI container
+func (c *Container) GetConfig() *Config {
+	return c.Get(DIConfig).(*Config)
+}
+
+// GetI18n returns i18n.TextsSource from the DI container
+func (c *Container) GetI18n() *i18n.TextsSource {
+	return c.Get(DII18n).(*i18n.TextsSource)
+}
+
+// GetRouter returns gin.Engine router from the DI container
+func (c *Container) GetRouter() *gin.Engine {
+	return c.Get(DIRouter).(*gin.Engine)
+}
+
+// GetNotifications returns notifications.Client from the DI container
+func (c *Container) GetNotifications() *notifications.Client {
+	return c.Get(DINotifications).(*notifications.Client)
+}
+
+// GetMongoDB returns mongodb.MongoDB from the DI container
+func (c *Container) GetMongoDB() *mongodb.MongoDB {
+	m := c.Get(DIMongo).(*mongodb.MongoDB)
+	if m == nil {
+		log.Fatal(logTag, "attempt to access nil MongoDB instance")
+	}
+	return m
+}
+
+// GetRedis returns redis.Client from the DI container
+func (c *Container) GetRedis() *redis.Client {
+	r := c.Get(DIRedis).(*redis.Client)
+	if r == nil {
+		log.Fatal(logTag, "attempt to access nil redis client instance")
+	}
+	return r
+}
 
 // DIBuilderDft returns default DI builder
 func DIBuilderDft() (*di.Builder, error) {

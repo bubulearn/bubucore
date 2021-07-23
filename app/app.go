@@ -1,46 +1,37 @@
 package app
 
 import (
-	"github.com/bubulearn/bubucore/i18n"
-	"github.com/bubulearn/bubucore/mongodb"
-	"github.com/bubulearn/bubucore/notifications"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
-	"github.com/sarulabs/di"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
+
+const logTag = "[bubucore.App] "
 
 // NewApp creates new App instance.
 // If ctn is nil, DIBuilderDft() will be called.
-func NewApp(ctn *di.Container) *App {
-	var c di.Container
+func NewApp(ctn *Container) *App {
 	if ctn == nil {
-		builder, err := DIBuilderDft()
-		if err != nil {
-			log.Fatal("failed to init default DI builder: ", err)
-		}
-		c = builder.Build()
-	} else {
-		c = *ctn
+		ctn = BuildDefaultContainer()
 	}
 	return &App{
-		ctn: c,
+		ctn: ctn,
 	}
 }
 
 // PrepareRouterFn is a function to prepare router before run
-type PrepareRouterFn = func(router *gin.Engine, ctn di.Container) error
+type PrepareRouterFn = func(router *gin.Engine, ctn *Container) error
 
 // PrepareContainerFn is a function to prepare DI container before run
-type PrepareContainerFn = func(ctn di.Container) error
+type PrepareContainerFn = func(ctn *Container) error
 
 // App is a Bubulearn service app
 type App struct {
-	ctn di.Container
+	ctn *Container
 
 	prepareCtnFn    PrepareContainerFn
 	prepareRouterFn PrepareRouterFn
+
+	initialized bool
 }
 
 // SetPrepareRouterFn sets init router hook
@@ -53,69 +44,35 @@ func (a *App) SetPrepareContainerFn(fn PrepareContainerFn) {
 	a.prepareCtnFn = fn
 }
 
-// GetContainer returns an App's di.Container instance
-func (a *App) GetContainer() di.Container {
+// C returns an App's Container instance
+func (a *App) C() *Container {
+	if a.ctn == nil {
+		log.Warn(logTag, "nil Container given to the App, switching to default")
+		a.ctn = BuildDefaultContainer()
+	}
 	return a.ctn
-}
-
-// GetConfigViper returns config viper.Viper from the DI container
-func (a *App) GetConfigViper() *viper.Viper {
-	return a.ctn.Get(DIConfigViper).(*viper.Viper)
-}
-
-// GetConfig returns Config from the DI container
-func (a *App) GetConfig() *Config {
-	return a.ctn.Get(DIConfig).(*Config)
-}
-
-// GetI18n returns i18n.TextsSource from the DI container
-func (a *App) GetI18n() *i18n.TextsSource {
-	return a.ctn.Get(DII18n).(*i18n.TextsSource)
-}
-
-// GetRouter returns gin.Engine router from the DI container
-func (a *App) GetRouter() *gin.Engine {
-	return a.ctn.Get(DIRouter).(*gin.Engine)
-}
-
-// GetNotifications returns notifications.Client from the DI container
-func (a *App) GetNotifications() *notifications.Client {
-	return a.ctn.Get(DINotifications).(*notifications.Client)
-}
-
-// GetMongoDB returns mongodb.MongoDB from the DI container
-func (a *App) GetMongoDB() *mongodb.MongoDB {
-	m := a.ctn.Get(DIMongo).(*mongodb.MongoDB)
-	if m == nil {
-		log.Fatal("[bubucore.App] attempt to access nil MongoDB instance")
-	}
-	return m
-}
-
-// GetRedis returns redis.Client from the DI container
-func (a *App) GetRedis() *redis.Client {
-	r := a.ctn.Get(DIRedis).(*redis.Client)
-	if r == nil {
-		log.Fatal("[bubucore.App] attempt to access nil redis client instance")
-	}
-	return r
 }
 
 // Init initializes App without starting the server
 func (a *App) Init() {
+	if a.initialized {
+		return
+	}
+	a.initialized = true
+
 	if a.prepareCtnFn != nil {
 		err := a.prepareCtnFn(a.ctn)
 		if err != nil {
-			log.Fatal("[bubucore.App] failed to prepare DI container: ", err)
+			log.Fatal(logTag, "failed to prepare DI container: ", err)
 		}
 	}
 
-	router := a.GetRouter()
+	router := a.C().GetRouter()
 
 	if a.prepareRouterFn != nil {
 		err := a.prepareRouterFn(router, a.ctn)
 		if err != nil {
-			log.Fatal("[bubucore.App] failed to init router: ", err)
+			log.Fatal(logTag, "failed to init router: ", err)
 		}
 	}
 }
@@ -125,10 +82,10 @@ func (a *App) Run() {
 	a.Init()
 	defer a.Close()
 
-	router := a.GetRouter()
-	conf := a.GetConfig()
+	router := a.C().GetRouter()
+	conf := a.C().GetConfig()
 
-	log.Info("[bubucore.App] starting gin server")
+	log.Info(logTag, "starting gin server")
 
 	err := router.Run(":" + conf.Port)
 	if err != nil {
