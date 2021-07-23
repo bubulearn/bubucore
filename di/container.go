@@ -42,7 +42,7 @@ func (c *Container) Close() {
 			continue
 		}
 		if def.Close == nil {
-			return
+			continue
 		}
 		err := def.Close(def.obj)
 		if err != nil {
