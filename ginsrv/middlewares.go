@@ -161,7 +161,12 @@ func (m *Middlewares) LogBody() gin.HandlerFunc {
 		writer := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
 		ctx.Writer = writer
 		ctx.Next()
-		logger := log.WithField(bubucore.LogFieldType, bubucore.LogTypeHTTPIO)
+		logger := log.WithFields(log.Fields{
+			bubucore.LogFieldType:   bubucore.LogTypeHTTPIO,
+			bubucore.LogFieldStatus: ctx.Writer.Status(),
+			bubucore.LogFieldPath:   ctx.FullPath(),
+			bubucore.LogFieldMethod: ctx.Request.Method,
+		})
 		if ctx.Writer.Status() >= 500 {
 			logger.Error(writer.body.String())
 		} else if ctx.Writer.Status() >= 400 {
@@ -173,17 +178,18 @@ func (m *Middlewares) LogBody() gin.HandlerFunc {
 // LogFormatter formats gin log record as JSON string
 func (m *Middlewares) LogFormatter(param gin.LogFormatterParams) string {
 	data := map[string]string{
-		"@timestamp":          param.TimeStamp.Format(time.RFC3339),
-		"ip":                  param.ClientIP,
-		"method":              param.Method,
-		bubucore.LogFieldPath: param.Path,
-		"proto":               param.Request.Proto,
-		"status":              strconv.FormatInt(int64(param.StatusCode), 10),
-		"latency":             strconv.FormatFloat(param.Latency.Seconds(), 'f', 8, 64),
-		"latency_fmt":         param.Latency.String(),
-		"agent":               param.Request.UserAgent(),
-		"error":               param.ErrorMessage,
-		"response_body_size":  strconv.FormatInt(int64(param.BodySize), 10),
+		"@timestamp":            param.TimeStamp.Format(time.RFC3339),
+		"ip":                    param.ClientIP,
+		bubucore.LogFieldMethod: param.Method,
+		bubucore.LogFieldPath:   param.Path,
+		"proto":                 param.Request.Proto,
+		bubucore.LogFieldStatus: strconv.FormatInt(int64(param.StatusCode), 10),
+		"latency":               strconv.FormatFloat(param.Latency.Seconds(), 'f', 8, 64),
+		"latency_fmt":           param.Latency.String(),
+		"agent":                 param.Request.UserAgent(),
+		"error":                 param.ErrorMessage,
+		"request_body":          "-",
+		"response_body_size":    strconv.FormatInt(int64(param.BodySize), 10),
 	}
 
 	if param.StatusCode >= 400 && param.Request.Body != nil {

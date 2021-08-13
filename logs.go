@@ -18,6 +18,8 @@ const (
 	LogFieldAPIVersion = "api_version"
 	LogFieldType       = "log_type"
 	LogFieldPath       = "path"
+	LogFieldStatus     = "status"
+	LogFieldMethod     = "method"
 )
 
 // Log types
