@@ -37,6 +37,11 @@ func (h *ContextHandler) GetContainer() *di.Container {
 	return ctn.(*di.Container)
 }
 
+// GetI18nSource returns i18n texts source from the container
+func (h *ContextHandler) GetI18nSource() *i18n.TextsSource {
+	return h.GetContainer().Get("i18n").(*i18n.TextsSource)
+}
+
 // GetAccessClaims returns AccessTokenClaims from the current gin context
 func (h *ContextHandler) GetAccessClaims() (*tokens.AccessTokenClaims, error) {
 	c, ok := h.Get(KeyAccessClaims)
@@ -80,10 +85,7 @@ func (h *ContextHandler) Err(err error) {
 			status = e.Code
 		}
 	}
-	h.JSON(
-		status,
-		err,
-	)
+	h.ErrWithStatus(err, status)
 }
 
 // ErrS sends error message as response
@@ -97,6 +99,7 @@ func (h *ContextHandler) ErrWithStatus(err error, status int) {
 	if !ok {
 		e = bubucore.NewError(status, err.Error())
 	}
+	e.Localized = h.GetI18nSource().T(e.Message, h.GetI18nLang(), nil)
 	h.JSON(
 		status,
 		e,

@@ -25,8 +25,9 @@ func NewError(code int, msg string) *Error {
 
 // Error defines the response error
 type Error struct {
-	Code    int    `json:"code" example:"403"`
-	Message string `json:"message" example:"Access denied"`
+	Code      int    `json:"code" example:"403"`
+	Message   string `json:"message" example:"Access denied"`
+	Localized string `json:"localized" example:"Доступ запрещен"`
 }
 
 // Error as a string
