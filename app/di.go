@@ -8,6 +8,7 @@ import (
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/mongodb"
 	"github.com/bubulearn/bubucore/notifications"
+	"github.com/bubulearn/bubucore/users"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
@@ -32,6 +33,9 @@ const (
 	// DINotifications contains notifications.Client instance
 	DINotifications = "notifications"
 
+	// DIUsersService contains users.Client instance
+	DIUsersService = "users_service"
+
 	// DIMongo contains mongodb.MongoDB connection instance, or nil if no mongo host provided in config
 	DIMongo = "mongo"
 
@@ -48,7 +52,7 @@ func GetDefaultDIBuilder() (*di.Builder, error) {
 		return nil, err
 	}
 
-	err = builder.Add(DIDefNotifications())
+	err = builder.Add(DIDefNotifications(), DIDefUsersService())
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +140,20 @@ func DIDefNotifications() di.Def {
 		},
 		Close: func(obj interface{}) error {
 			return obj.(*notifications.Client).Close()
+		},
+	}
+}
+
+// DIDefUsersService returns default users.Client dependency definition
+func DIDefUsersService() di.Def {
+	return di.Def{
+		Name: DIUsersService,
+		Build: func(ctn *di.Container) (interface{}, error) {
+			conf := ctn.Get(DIConfig).(*Config)
+			return users.NewClient(conf.UsersServiceHost, conf.UsersServiceToken), nil
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*users.Client).Close()
 		},
 	}
 }
@@ -228,6 +246,11 @@ func DIGetRouter(ctn *di.Container) *gin.Engine {
 // DIGetNotifications returns notifications.Client from the DI container
 func DIGetNotifications(ctn *di.Container) *notifications.Client {
 	return ctn.Get(DINotifications).(*notifications.Client)
+}
+
+// DIGetUsersService returns users.Client from the DI container
+func DIGetUsersService(ctn *di.Container) *users.Client {
+	return ctn.Get(DIUsersService).(*users.Client)
 }
 
 // DIGetMongoDB returns mongodb.MongoDB from the DI container

@@ -9,12 +9,14 @@ import (
 const (
 	RoleStudent = 1
 	RoleTeacher = 500
+	RoleBot     = 999
 	RoleAdmin   = 1000
 )
 
 var rolesAvailable = []int{
 	RoleStudent,
 	RoleTeacher,
+	RoleBot,
 	RoleAdmin,
 }
 

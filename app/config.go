@@ -18,6 +18,9 @@ type Config struct {
 	NotificationsHost  string
 	NotificationsToken string
 
+	UsersServiceHost  string
+	UsersServiceToken string
+
 	RedisHost     string
 	RedisDb       int
 	RedisPassword string
@@ -44,6 +47,9 @@ func (c *Config) SetFromViper(conf *viper.Viper) {
 
 	c.NotificationsHost = conf.GetString("bubu_notifications_host")
 	c.NotificationsToken = conf.GetString("bubu_notifications_token")
+
+	c.UsersServiceHost = conf.GetString("bubu_users_host")
+	c.UsersServiceToken = conf.GetString("bubu_users_token")
 
 	c.RedisHost = conf.GetString("redis_host")
 	c.RedisDb = conf.GetInt("redis_db")

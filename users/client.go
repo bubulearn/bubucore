@@ -14,6 +14,14 @@ const logTag = "[bubucore][users]"
 
 const endpointUserInfo = "auth/user/"
 
+// NewClient creates new Client instance
+func NewClient(host string, token string) *Client {
+	return &Client{
+		host:  host,
+		token: token,
+	}
+}
+
 // Client is a bubulearn users service client
 type Client struct {
 	host    string
@@ -28,6 +36,14 @@ func (c *Client) GetUserInfo(userID string) (user *User, err error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+// Close the Client
+func (c *Client) Close() error {
+	if c._client != nil {
+		c._client.CloseIdleConnections()
+	}
+	return nil
 }
 
 // doRequest sends request to the gorush and decodes response to the respData
