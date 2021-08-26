@@ -46,7 +46,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// doRequest sends request to the gorush and decodes response to the respData
+// doRequest sends request to the users service and decodes response to the respData
 func (c *Client) doRequest(method string, endpoint string, reqData interface{}, respData interface{}) (err error) {
 	err = c.checkPreconditions()
 	if err != nil {
@@ -85,12 +85,12 @@ func (c *Client) doRequest(method string, endpoint string, reqData interface{}, 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return bubucore.NewError(resp.StatusCode, "[gorush] non-OK response: "+string(body))
+		return bubucore.NewError(resp.StatusCode, logTag+" non-OK response: "+string(body))
 	}
 
 	err = jsoniter.Unmarshal(body, respData)
 	if err != nil {
-		return bubucore.NewError(http.StatusBadGateway, "[gorush] failed to decode response: "+string(body))
+		return bubucore.NewError(http.StatusBadGateway, logTag+" failed to decode response: "+string(body))
 	}
 
 	return nil
