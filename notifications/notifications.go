@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/bubulearn/bubucore"
 	jsoniter "github.com/json-iterator/go"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -39,6 +40,16 @@ type Client struct {
 	_client *http.Client
 }
 
+// Ping pings notifications host
+func (c *Client) Ping() error {
+	err := c.checkPreconditions()
+	if err != nil {
+		return err
+	}
+
+	return c.Send("/", nil)
+}
+
 // Send sends notification request
 func (c *Client) Send(endpoint string, data interface{}) error {
 	err := c.checkPreconditions()
@@ -48,12 +59,16 @@ func (c *Client) Send(endpoint string, data interface{}) error {
 
 	endpoint = "/" + strings.TrimLeft(endpoint, "/")
 
-	body, err := jsoniter.Marshal(data)
-	if err != nil {
-		return err
+	var bodyReader io.Reader
+	if data != nil {
+		body, err := jsoniter.Marshal(data)
+		if err != nil {
+			return err
+		}
+		bodyReader = bytes.NewBuffer(body)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.host+endpoint, bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, c.host+endpoint, bodyReader)
 	if err != nil {
 		return err
 	}
@@ -73,7 +88,7 @@ func (c *Client) Send(endpoint string, data interface{}) error {
 		return nil
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

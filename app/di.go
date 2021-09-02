@@ -136,7 +136,14 @@ func DIDefNotifications() di.Def {
 		Name: DINotifications,
 		Build: func(ctn *di.Container) (interface{}, error) {
 			conf := ctn.Get(DIConfig).(*Config)
-			return notifications.NewClient(conf.NotificationsHost, conf.NotificationsToken), nil
+			client := notifications.NewClient(conf.NotificationsHost, conf.NotificationsToken)
+			if conf.NotificationsHost != "" {
+				err := client.Ping()
+				if err != nil {
+					return nil, err
+				}
+			}
+			return client, nil
 		},
 		Close: func(obj interface{}) error {
 			return obj.(*notifications.Client).Close()
