@@ -12,8 +12,9 @@ import (
 
 // notification-service endpoints
 const (
-	EndpointAppReport   = "app-report"
-	EndpointCustomEmail = "email"
+	EndpointAppReport        = "app-report"
+	EndpointCustomEmail      = "email"
+	EndpointPushNotification = "push"
 )
 
 // Templates names
@@ -99,6 +100,11 @@ func (c *Client) SendEmail(n Email) error {
 // SendAppReport sends notification about app report
 func (c *Client) SendAppReport(msg string) error {
 	return c.SendPlainText(EndpointAppReport, msg)
+}
+
+// SendPushNotification sends push notification
+func (c *Client) SendPushNotification(push PushNotification) error {
+	return c.Send(EndpointPushNotification, push)
 }
 
 // Close finalizes the Client
