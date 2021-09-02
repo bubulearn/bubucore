@@ -47,7 +47,37 @@ func (c *Client) Ping() error {
 		return err
 	}
 
-	return c.Send("/", nil)
+	req, err := http.NewRequest(http.MethodGet, c.host, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-type", "application/json")
+
+	resp, err := c.client().Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	respErr := &bubucore.Error{}
+	err = jsoniter.Unmarshal(body, &respErr)
+	if err != nil {
+		return bubucore.NewError(http.StatusBadGateway, "failed to send notification and to decode response: "+string(body))
+	}
+
+	return respErr
 }
 
 // Send sends notification request
