@@ -63,6 +63,12 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 			ExpiresAt: time.Now().Unix() + int64(10*time.Minute.Seconds()),
 		},
 	}
+	assert.NoError(t, valid.Valid())
+
+	bubucore.Opt.ServiceName = ""
+	assert.Error(t, valid.Valid())
+
+	bubucore.Opt.ServiceName = "test"
 
 	invalid := []*tokens.AccessTokenClaims{
 		{
@@ -73,6 +79,10 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 			TokenClaimsDft: tokens.TokenClaimsDft{
 				UserID:          "03a4e59c-fb22-4bfa-8739-8062bcdd2005",
 				ServicesAllowed: []string{"test2", "test3"},
+				StandardClaims: jwt.StandardClaims{
+					Id:        "0bf97df4-6246-4809-bdf7-e8d993668283",
+					ExpiresAt: time.Now().Unix() + int64(10*time.Minute.Seconds()),
+				},
 			},
 		},
 		{},
@@ -117,8 +127,6 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 			RefreshTokenID: "145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
 		},
 	}
-
-	assert.NoError(t, valid.Valid())
 
 	for _, claims := range invalid {
 		assert.Error(t, claims.Valid())
