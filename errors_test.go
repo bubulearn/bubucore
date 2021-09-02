@@ -17,6 +17,7 @@ func TestError_Error(t *testing.T) {
 	errs := map[string]*bubucore.Error{
 		"test1": bubucore.NewError(1, "test1"),
 		"test2": bubucore.NewError(2, "test2"),
+		"test3": bubucore.NewError(2, "test", 3),
 	}
 
 	for text, err := range errs {

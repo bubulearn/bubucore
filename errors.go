@@ -1,6 +1,7 @@
 package bubucore
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -16,10 +17,10 @@ var (
 )
 
 // NewError creates a new Error instance
-func NewError(code int, msg string) *Error {
+func NewError(code int, messages ...interface{}) *Error {
 	return &Error{
 		Code:    code,
-		Message: msg,
+		Message: fmt.Sprint(messages...),
 	}
 }
 
@@ -27,7 +28,7 @@ func NewError(code int, msg string) *Error {
 type Error struct {
 	Code      int    `json:"code" example:"403"`
 	Message   string `json:"message" example:"Access denied"`
-	Localized string `json:"localized" example:"Доступ запрещен"`
+	Localized string `json:"localized,omitempty" example:"Доступ запрещен"`
 }
 
 // Error as a string

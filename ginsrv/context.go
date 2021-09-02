@@ -99,7 +99,7 @@ func (h *ContextHandler) ErrWithStatus(err error, status int) {
 	if !ok {
 		e = bubucore.NewError(status, err.Error())
 	}
-	e.Localized = h.GetI18nSource().T(e.Message, h.GetI18nLang(), nil)
+	e.Localized = h.GetI18nSource().T(e.Error(), h.GetI18nLang(), nil)
 	h.JSON(
 		status,
 		e,
