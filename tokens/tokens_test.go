@@ -46,6 +46,9 @@ func TestParseAccessToken(t *testing.T) {
 }
 
 func TestAccessTokenClaims_Valid(t *testing.T) {
+	initial := bubucore.Opt.ServiceName
+	bubucore.Opt.ServiceName = "test"
+
 	valid := &tokens.AccessTokenClaims{
 		RefreshTokenID: "145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
 		Role:           10,
@@ -53,7 +56,8 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 		Language:       i18n.LangRu,
 	}
 	valid.TokenClaimsDft = tokens.TokenClaimsDft{
-		UserID: "03a4e59c-fb22-4bfa-8739-8062bcdd2005",
+		UserID:          "03a4e59c-fb22-4bfa-8739-8062bcdd2005",
+		ServicesAllowed: []string{"test1", "test"},
 		StandardClaims: jwt.StandardClaims{
 			Id:        "0bf97df4-6246-4809-bdf7-e8d993668283",
 			ExpiresAt: time.Now().Unix() + int64(10*time.Minute.Seconds()),
@@ -61,6 +65,16 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 	}
 
 	invalid := []*tokens.AccessTokenClaims{
+		{
+			RefreshTokenID: "145b9a16-9a57-4264-b7a7-b96ab3b7e7b9",
+			Role:           10,
+			Name:           "User Name",
+			Language:       i18n.LangRu,
+			TokenClaimsDft: tokens.TokenClaimsDft{
+				UserID:          "03a4e59c-fb22-4bfa-8739-8062bcdd2005",
+				ServicesAllowed: []string{"test2", "test3"},
+			},
+		},
 		{},
 		{Role: 10, RefreshTokenID: ""},
 		{
@@ -109,4 +123,6 @@ func TestAccessTokenClaims_Valid(t *testing.T) {
 	for _, claims := range invalid {
 		assert.Error(t, claims.Valid())
 	}
+
+	bubucore.Opt.ServiceName = initial
 }

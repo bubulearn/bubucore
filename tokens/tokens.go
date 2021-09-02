@@ -34,15 +34,26 @@ func parseJWTKeyFunc(_ *jwt.Token) (interface{}, error) {
 
 // TokenClaims is token claims interface
 type TokenClaims interface {
+	// GetTokenID returns token ID
 	GetTokenID() string
+
+	// GetUserID returns token's user ID
 	GetUserID() string
+
+	// GetRelatedTokenID returns related refresh token ID
 	GetRelatedTokenID() string
+
+	// GetAllowedServices returns services allowed to use token with.
+	// Return nil or an empty slice if all services are allowed.
+	GetAllowedServices() []string
+
 	jwt.Claims
 }
 
 // TokenClaimsDft is a default realization of TokenClaims
 type TokenClaimsDft struct {
-	UserID string `json:"uid"`
+	UserID          string   `json:"uid"`
+	ServicesAllowed []string `json:"srvs,omitempty"`
 	jwt.StandardClaims
 }
 
@@ -54,6 +65,12 @@ func (c TokenClaimsDft) GetTokenID() string {
 // GetUserID returns token's user ID
 func (c TokenClaimsDft) GetUserID() string {
 	return c.UserID
+}
+
+// GetAllowedServices returns services allowed to use token with.
+// Return nil or an empty slice if all services are allowed.
+func (c TokenClaimsDft) GetAllowedServices() []string {
+	return c.ServicesAllowed
 }
 
 // Valid checks is data in claims is valid
@@ -75,6 +92,24 @@ func (c TokenClaimsDft) Valid() error {
 	}
 	if c.VerifyNotBefore(now, false) == false {
 		return bubucore.ErrTokenInvalid
+	}
+
+	allowed := c.GetAllowedServices()
+	if len(allowed) > 0 {
+		currSrv := bubucore.Opt.ServiceName
+		if currSrv == "" {
+			return bubucore.ErrTokenInvalid
+		}
+		ok := false
+		for _, s := range allowed {
+			if s == currSrv {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return bubucore.ErrTokenInvalid
+		}
 	}
 
 	return nil
