@@ -52,12 +52,12 @@ func GetDefaultDIBuilder() (*di.Builder, error) {
 		return nil, err
 	}
 
-	err = builder.Add(DIDefNotifications(), DIDefUsersService())
+	err = builder.Add(DIDefMongo(), DIDefRedis())
 	if err != nil {
 		return nil, err
 	}
 
-	err = builder.Add(DIDefMongo(), DIDefRedis())
+	err = builder.Add(DIDefNotifications(), DIDefUsersService())
 	if err != nil {
 		return nil, err
 	}
