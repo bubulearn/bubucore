@@ -18,8 +18,10 @@ type Config struct {
 	NotificationsHost  string
 	NotificationsToken string
 
-	UsersServiceHost  string
-	UsersServiceToken string
+	UsersServiceHost     string
+	UsersServiceToken    string
+	UsersServiceUseRedis bool
+	UsersServiceTTL      int
 
 	RedisHost     string
 	RedisDb       int
@@ -50,6 +52,8 @@ func (c *Config) SetFromViper(conf *viper.Viper) {
 
 	c.UsersServiceHost = conf.GetString("bubu_users_host")
 	c.UsersServiceToken = conf.GetString("bubu_users_token")
+	c.UsersServiceUseRedis = conf.GetBool("bubu_users_use_redis")
+	c.UsersServiceTTL = conf.GetInt("bubu_users_ttl")
 
 	c.RedisHost = conf.GetString("redis_host")
 	c.RedisDb = conf.GetInt("redis_db")

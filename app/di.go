@@ -157,7 +157,14 @@ func DIDefUsersService() di.Def {
 		Name: DIUsersService,
 		Build: func(ctn *di.Container) (interface{}, error) {
 			conf := ctn.Get(DIConfig).(*Config)
-			return users.NewClient(conf.UsersServiceHost, conf.UsersServiceToken), nil
+			client := users.NewClient(conf.UsersServiceHost, conf.UsersServiceToken)
+
+			if conf.UsersServiceUseRedis {
+				redisClient := DIGetRedis(ctn)
+				client.SetRedis(redisClient, conf.UsersServiceTTL)
+			}
+
+			return client, nil
 		},
 		Close: func(obj interface{}) error {
 			return obj.(*users.Client).Close()

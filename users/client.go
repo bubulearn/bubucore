@@ -2,7 +2,9 @@ package users
 
 import (
 	"bytes"
+	"context"
 	"github.com/bubulearn/bubucore"
+	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/http"
@@ -24,17 +26,35 @@ func NewClient(host string, token string) *Client {
 
 // Client is a bubulearn users service client
 type Client struct {
-	host    string
-	token   string
+	host  string
+	token string
+
+	redis    *redis.Client
+	cacheTTL int
+
 	_client *http.Client
+}
+
+// SetRedis sets redis client to cache results with
+func (c *Client) SetRedis(client *redis.Client, ttl int) {
+	c.redis = client
+	c.cacheTTL = ttl
 }
 
 // GetUserInfo fetches user info by user ID
 func (c *Client) GetUserInfo(userID string) (user *User, err error) {
+	user = c.readFromCache(userID)
+	if user != nil {
+		return user, nil
+	}
+
 	err = c.doRequest(http.MethodGet, endpointUserInfo+userID, nil, &user)
 	if err != nil {
 		return nil, err
 	}
+
+	c.writeToCache(user)
+
 	return user, nil
 }
 
@@ -115,4 +135,54 @@ func (c *Client) client() *http.Client {
 		}
 	}
 	return c._client
+}
+
+// cacheKey returns cache key for the user info
+func (c *Client) cacheKey(userID string) string {
+	return "bubuusersservice:userinfo:" + userID
+}
+
+// readFromCache reads user info from the cache
+func (c *Client) readFromCache(userID string) *User {
+	if c.redis == nil {
+		return nil
+	}
+
+	cacheKey := c.cacheKey(userID)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	cached, err := c.redis.Get(ctx, cacheKey).Result()
+	if err != nil {
+		return nil
+	}
+
+	var user *User
+	err = jsoniter.Unmarshal([]byte(cached), &user)
+	if err != nil {
+		c.redis.Del(ctx, cacheKey)
+		return nil
+	}
+
+	return user
+}
+
+// writeToCache saves user info to the cache
+func (c *Client) writeToCache(user *User) {
+	if c.redis == nil {
+		return
+	}
+
+	cacheKey := c.cacheKey(user.ID)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	data, err := jsoniter.Marshal(user)
+	if err != nil {
+		return
+	}
+
+	c.redis.Set(ctx, cacheKey, data, time.Second*time.Duration(c.cacheTTL))
 }
