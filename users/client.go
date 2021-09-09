@@ -48,7 +48,7 @@ func (c *Client) GetUserInfo(userID string) (user *User, err error) {
 		return user, nil
 	}
 
-	err = c.doRequest(http.MethodGet, endpointUserInfo+userID, nil, &user)
+	err = c.DoRequest(http.MethodGet, endpointUserInfo+userID, nil, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +66,8 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// doRequest sends request to the users service and decodes response to the respData
-func (c *Client) doRequest(method string, endpoint string, reqData interface{}, respData interface{}) (err error) {
+// DoRequest sends request to the users service and decodes response to the respData
+func (c *Client) DoRequest(method string, endpoint string, reqData interface{}, respData interface{}) (err error) {
 	err = c.checkPreconditions()
 	if err != nil {
 		return err
