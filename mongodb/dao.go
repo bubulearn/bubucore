@@ -22,6 +22,7 @@ type DAO interface {
 	FetchAllF(target interface{}, filter interface{}, opts ...*options.FindOptions) error
 
 	InsertOne(data interface{}, opts ...*options.InsertOneOptions) (id string, err error)
+	InsertMany(rows []interface{}, opts ...*options.InsertManyOptions) (insertedIDs []string, err error)
 
 	UpdateByID(id string, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 	UpdateOne(filter interface{}, data interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
@@ -121,12 +122,12 @@ func (d *DAOMg) InsertOne(data interface{}, opts ...*options.InsertOneOptions) (
 
 	doc, err := bson.Marshal(data)
 	if err != nil {
-		return "", err
+		return "", d.Err(err)
 	}
 
 	res, err := d.C().InsertOne(ctx, doc, opts...)
 	if err != nil {
-		return "", err
+		return "", d.Err(err)
 	}
 
 	id, ok := res.InsertedID.(string)
@@ -140,6 +141,49 @@ func (d *DAOMg) InsertOne(data interface{}, opts ...*options.InsertOneOptions) (
 	}
 
 	return "", nil
+}
+
+// InsertMany inserts multiple documents to the collection
+func (d *DAOMg) InsertMany(rows []interface{}, opts ...*options.InsertManyOptions) (insertedIDs []string, err error) {
+	ctx, cancel := d.Ctx(30)
+	defer cancel()
+
+	docs := make([]interface{}, len(rows))
+	for i, row := range rows {
+		doc, err := bson.Marshal(row)
+		if err != nil {
+			return nil, d.Err(err)
+		}
+		docs[i] = doc
+	}
+
+	res, err := d.C().InsertMany(ctx, docs, opts...)
+	if err != nil {
+		return nil, d.Err(err)
+	}
+
+	insertedIDs = make([]string, len(res.InsertedIDs))
+	for i, id := range res.InsertedIDs {
+		var ok bool
+		var vs string
+		var vp primitive.ObjectID
+
+		vs, ok = id.(string)
+		if ok {
+			insertedIDs[i] = vs
+			continue
+		}
+
+		vp, ok = id.(primitive.ObjectID)
+		if ok {
+			insertedIDs[i] = vp.String()
+			continue
+		}
+
+		insertedIDs[i] = ""
+	}
+
+	return insertedIDs, nil
 }
 
 // UpdateByID updates one row by ID
