@@ -9,17 +9,19 @@ import (
 
 // Log custom fields
 const (
-	LogFieldTimestamp  = "@timestamp"
-	LogFieldLevel      = "level"
-	LogFieldMessage    = "message"
-	LogFieldCaller     = "caller"
-	LogFieldService    = "service"
-	LogFieldHostname   = "hostname"
-	LogFieldAPIVersion = "api_version"
-	LogFieldType       = "log_type"
-	LogFieldPath       = "path"
-	LogFieldStatus     = "status"
-	LogFieldMethod     = "method"
+	LogFieldTimestamp         = "@timestamp"
+	LogFieldLevel             = "level"
+	LogFieldMessage           = "message"
+	LogFieldCaller            = "caller"
+	LogFieldService           = "service"
+	LogFieldHostname          = "hostname"
+	LogFieldAPIVersion        = "api_version"
+	LogFieldType              = "log_type"
+	LogFieldPath              = "path"
+	LogFieldStatus            = "status"
+	LogFieldMethod            = "method"
+	LogFieldClientAppVersion  = "client_app_ver"
+	LogFieldClientAppPlatform = "client_app_platform"
 )
 
 // Log types

@@ -214,6 +214,9 @@ func (m *Middlewares) LogFormatter(param gin.LogFormatterParams) string {
 		data[bubucore.LogFieldLevel] = "info"
 	}
 
+	data[bubucore.LogFieldClientAppVersion] = param.Request.Header.Get("client_app_version")
+	data[bubucore.LogFieldClientAppPlatform] = param.Request.Header.Get("client_app_platform")
+
 	// not using marshalling for speed-up
 	values := make([]string, len(data))
 	i := 0
