@@ -14,7 +14,10 @@ import (
 
 const logTag = "[bubucore][users]"
 
-const endpointUserInfo = "auth/user/"
+const (
+	endpointUserInfo    = "auth/user/"
+	endpointUsersGetAll = "auth/users/all"
+)
 
 // NewClient creates new Client instance
 func NewClient(host string, token string) *Client {
@@ -39,6 +42,20 @@ type Client struct {
 func (c *Client) SetRedis(client *redis.Client, ttl int) {
 	c.redis = client
 	c.cacheTTL = ttl
+}
+
+// GetAll returns all users
+func (c *Client) GetAll() (users []*User, err error) {
+	err = c.DoRequest(http.MethodGet, endpointUsersGetAll, nil, &users)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, user := range users {
+		c.writeToCache(user)
+	}
+
+	return users, nil
 }
 
 // GetUserInfo fetches user info by user ID
