@@ -1,13 +1,10 @@
 package app
 
 import (
-	"context"
 	"github.com/bubulearn/bubucore/di"
 	"github.com/bubulearn/bubucore/ginsrv"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"os"
-	"os/signal"
 )
 
 const logTag = "[bubucore.App] "
@@ -68,28 +65,6 @@ func (a *App) Init() {
 func (a *App) Run() {
 	a.Init()
 	defer a.Close()
-
-	// Graceful shutdown
-	{
-		ctx := context.Background()
-		ctx, cancel := context.WithCancel(ctx)
-
-		osSignalCh := make(chan os.Signal, 1)
-		signal.Notify(osSignalCh, os.Interrupt)
-
-		defer func() {
-			signal.Stop(osSignalCh)
-			cancel()
-		}()
-
-		go func() {
-			select {
-			case <-osSignalCh:
-				cancel()
-			case <-ctx.Done():
-			}
-		}()
-	}
 
 	router := DIGetRouter(a.ctn)
 	conf := DIGetConfig(a.ctn)
