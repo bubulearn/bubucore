@@ -6,6 +6,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -76,4 +77,10 @@ func JSONConvert(source interface{}, target interface{}) error {
 		return err
 	}
 	return jsoniter.Unmarshal(json, target)
+}
+
+// ValidateURL checks if string is a valid URL value
+func ValidateURL(urlAddr string) bool {
+	_, err := url.ParseRequestURI(urlAddr)
+	return err == nil
 }

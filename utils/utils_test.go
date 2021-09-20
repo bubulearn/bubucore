@@ -140,3 +140,32 @@ func TestJSONConvert(t *testing.T) {
 	err = utils.JSONConvert("invalid value", &targetValid)
 	assert.Error(t, err)
 }
+
+func TestValidateURL(t *testing.T) {
+	{
+		t.Log("Testing valid URLs")
+		valid := []string{
+			"https://example.com",
+			"http://example.com?test=1",
+			"//example.com",
+		}
+
+		for i, s := range valid {
+			assert.Equal(t, true, utils.ValidateURL(s), i)
+		}
+	}
+
+	{
+		t.Log("Testing invalid URLs")
+		invalid := []string{
+			"what is it?",
+			"42 is not an answer",
+			"",
+			"example.com/test",
+		}
+
+		for i, s := range invalid {
+			assert.Equal(t, false, utils.ValidateURL(s), i)
+		}
+	}
+}
