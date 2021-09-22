@@ -22,7 +22,7 @@ const (
 	// KeyI18nLang is a context key for language
 	KeyI18nLang = "BubuI18nLang"
 
-	// KeyDIContainer is a context key for a DI di.Container
+	// KeyDIContainer is a context key for a di.Container
 	KeyDIContainer = "BubuDIContainer"
 )
 

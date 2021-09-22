@@ -84,3 +84,20 @@ func ValidateURL(urlAddr string) bool {
 	_, err := url.ParseRequestURI(urlAddr)
 	return err == nil
 }
+
+// FilterStrings returns string slice with only non-empty values
+func FilterStrings(items []string) []string {
+	filtered := make([]string, 0)
+	if items == nil {
+		return filtered
+	}
+
+	for _, item := range items {
+		item = strings.TrimSpace(item)
+		if item != "" {
+			filtered = append(filtered, item)
+		}
+	}
+
+	return filtered
+}

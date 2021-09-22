@@ -169,3 +169,24 @@ func TestValidateURL(t *testing.T) {
 		}
 	}
 }
+
+func TestFilterStrings(t *testing.T) {
+	input := []string{
+		"",
+		"   ",
+		"\n\n",
+		" TEST1 ",
+		"  TEST2  ",
+	}
+	expected := []string{
+		"TEST1",
+		"TEST2",
+	}
+	output := utils.FilterStrings(input)
+
+	assert.EqualValues(t, expected, output)
+
+	nilOut := utils.FilterStrings(nil)
+	assert.NotNil(t, nilOut)
+	assert.Equal(t, 0, len(nilOut))
+}
