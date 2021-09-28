@@ -16,6 +16,7 @@ const (
 	EndpointAppReport        = "app-report"
 	EndpointCustomEmail      = "email"
 	EndpointPushNotification = "push"
+	EndpointAppEvent         = "app-event"
 )
 
 // Templates names
@@ -150,6 +151,17 @@ func (c *Client) SendAppReport(msg string) error {
 // SendPushNotification sends push notification
 func (c *Client) SendPushNotification(push PushNotification) error {
 	return c.Send(EndpointPushNotification, push)
+}
+
+// SendAppEvent sends notification to the message broken about some backend app event
+func (c *Client) SendAppEvent(eventName string, eventData interface{}) error {
+	event := NewAppEvent(eventName, eventData)
+	return c.SendCustomAppEvent(*event)
+}
+
+// SendCustomAppEvent sends notification to the message broken about some backend app event
+func (c *Client) SendCustomAppEvent(event AppEvent) error {
+	return c.Send(EndpointAppEvent, event)
 }
 
 // Close finalizes the Client
