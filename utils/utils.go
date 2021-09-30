@@ -4,14 +4,20 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
+	"math/rand"
 	"net/http"
 	"net/mail"
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var regxPhone *regexp.Regexp
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // ExtractBearerToken extracts token from the 'Authorization: Bearer <token>' header
 func ExtractBearerToken(r *http.Request) (string, error) {
@@ -100,4 +106,13 @@ func FilterStrings(items []string) []string {
 	}
 
 	return filtered
+}
+
+// GenerateRandomString generates random string
+func GenerateRandomString(symbols string, length uint) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = symbols[rand.Intn(len(symbols))]
+	}
+	return string(b)
 }

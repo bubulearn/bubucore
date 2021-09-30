@@ -4,6 +4,7 @@ import (
 	"github.com/bubulearn/bubucore/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"regexp"
 	"testing"
 )
 
@@ -189,4 +190,20 @@ func TestFilterStrings(t *testing.T) {
 	nilOut := utils.FilterStrings(nil)
 	assert.NotNil(t, nilOut)
 	assert.Equal(t, 0, len(nilOut))
+}
+
+func TestGenerateRandomString(t *testing.T) {
+	symbols := "abcdef0123"
+	count := 6
+
+	str := utils.GenerateRandomString(symbols, uint(count))
+	assert.Equal(t, count, len(str))
+
+	rx, err := regexp.Compile("^[" + symbols + "]*$")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	match := rx.Match([]byte(str))
+	assert.Equal(t, true, match)
 }
