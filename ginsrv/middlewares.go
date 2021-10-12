@@ -145,6 +145,27 @@ func (m *Middlewares) RequireRoleHigher(role int) gin.HandlerFunc {
 	}
 }
 
+// RequireStrictServiceAllowList validates if access claims has a list of allowed services
+func (m *Middlewares) RequireStrictServiceAllowList() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := NewContextHandler(c)
+		claims, err := ctx.GetAccessClaims()
+		if err != nil {
+			ctx.Err(err)
+			ctx.Abort()
+			return
+		}
+
+		if len(claims.GetAllowedServices()) == 0 {
+			ctx.Err(bubucore.ErrTokenInvalid)
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
 // InitI18nLang reads language from Accept-Language header and sets it to the context
 func (m *Middlewares) InitI18nLang() gin.HandlerFunc {
 	return func(c *gin.Context) {
