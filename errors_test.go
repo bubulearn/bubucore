@@ -3,6 +3,7 @@ package bubucore_test
 import (
 	"github.com/bubulearn/bubucore"
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"testing"
 )
 
@@ -11,6 +12,11 @@ func TestNewError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, 400, err.Code)
 	assert.Equal(t, "test", err.Message)
+
+	err = bubucore.NewError(http.StatusNotFound)
+	assert.Error(t, err)
+	assert.Equal(t, 404, err.Code)
+	assert.Equal(t, "Not Found", err.Message)
 }
 
 func TestError_Error(t *testing.T) {

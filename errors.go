@@ -18,6 +18,11 @@ var (
 
 // NewError creates a new Error instance
 func NewError(code int, messages ...interface{}) *Error {
+	if len(messages) == 0 && code >= 100 && code <= 599 {
+		messages = []interface{}{
+			http.StatusText(code),
+		}
+	}
 	return &Error{
 		Code:    code,
 		Message: fmt.Sprint(messages...),
