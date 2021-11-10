@@ -4,7 +4,9 @@ import (
 	"github.com/bubulearn/bubucore"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
+	"strings"
 )
 
 // i18nFileDft is a default i18n file path
@@ -14,6 +16,15 @@ const i18nFileDft = "./i18n.yml"
 type Config struct {
 	Port     string
 	LogLevel log.Level
+
+	CORSEnable    bool
+	CORSAllowAll  bool
+	CORSAllowCred bool
+	CORSAllowWS   bool
+	CORSAllowExt  bool
+	CORSMethods   []string
+	CORSHeaders   []string
+	CORSOrigins   []string
 
 	NotificationsHost  string
 	NotificationsToken string
@@ -46,6 +57,28 @@ func (c *Config) SetFromViper(conf *viper.Viper) {
 
 	c.Port = conf.GetString("bubu_service_port")
 	c.LogLevel = logLvl
+
+	// CORS
+	{
+		c.CORSEnable = conf.GetBool("cors_enable")
+		c.CORSAllowAll = conf.GetBool("cors_allow_all")
+		c.CORSAllowCred = conf.GetBool("cors_allow_cred")
+		c.CORSAllowWS = conf.GetBool("cors_allow_ws")
+		c.CORSAllowExt = conf.GetBool("cors_allow_ext")
+
+		values := strings.TrimSpace(conf.GetString("cors_methods"))
+		if values == "" {
+			c.CORSMethods = []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodPut, http.MethodDelete}
+		} else {
+			c.CORSMethods = strings.Split(values, ",")
+		}
+
+		values = strings.TrimSpace(conf.GetString("cors_headers"))
+		c.CORSHeaders = strings.Split(values, ",")
+
+		values = strings.TrimSpace(conf.GetString("cors_headers"))
+		c.CORSOrigins = strings.Split(values, "cors_origins")
+	}
 
 	c.NotificationsHost = conf.GetString("bubu_notifications_host")
 	c.NotificationsToken = conf.GetString("bubu_notifications_token")

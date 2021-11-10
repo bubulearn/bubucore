@@ -9,6 +9,7 @@ import (
 	"github.com/bubulearn/bubucore/mongodb"
 	"github.com/bubulearn/bubucore/notifications"
 	"github.com/bubulearn/bubucore/users"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
@@ -125,7 +126,24 @@ func DIDefRouter() di.Def {
 	return di.Def{
 		Name: DIRouter,
 		Build: func(ctn *di.Container) (interface{}, error) {
-			return ginsrv.GetDefaultRouter(), nil
+			conf := ctn.Get(DIConfig).(*Config)
+			router := ginsrv.GetDefaultRouter()
+
+			// CORS
+			if conf.CORSEnable {
+				router.Use(cors.New(cors.Config{
+					AllowAllOrigins:        conf.CORSAllowAll,
+					AllowCredentials:       conf.CORSAllowCred,
+					AllowWebSockets:        conf.CORSAllowWS,
+					AllowBrowserExtensions: conf.CORSAllowExt,
+
+					AllowOrigins: conf.CORSOrigins,
+					AllowHeaders: conf.CORSHeaders,
+					AllowMethods: conf.CORSMethods,
+				}))
+			}
+
+			return router, nil
 		},
 	}
 }
