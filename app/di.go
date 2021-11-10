@@ -132,6 +132,8 @@ func DIDefRouter() di.Def {
 			// CORS
 			if conf.CORSEnable {
 				router.Use(cors.New(cors.Config{
+					AllowWildcard: true,
+
 					AllowAllOrigins:        conf.CORSAllowAll,
 					AllowCredentials:       conf.CORSAllowCred,
 					AllowWebSockets:        conf.CORSAllowWS,
