@@ -76,8 +76,8 @@ func (c *Config) SetFromViper(conf *viper.Viper) {
 		values = strings.TrimSpace(conf.GetString("cors_headers"))
 		c.CORSHeaders = strings.Split(values, ",")
 
-		values = strings.TrimSpace(conf.GetString("cors_headers"))
-		c.CORSOrigins = strings.Split(values, "cors_origins")
+		values = strings.TrimSpace(conf.GetString("cors_origins"))
+		c.CORSOrigins = strings.Split(values, ",")
 	}
 
 	c.NotificationsHost = conf.GetString("bubu_notifications_host")
