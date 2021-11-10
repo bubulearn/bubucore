@@ -48,7 +48,7 @@ func (m *Middlewares) SetDIContainer(ctn *di.Container) gin.HandlerFunc {
 	}
 }
 
-// JWTAccess is a authorization by the Access token.
+// JWTAccess is an authorization by the Access token.
 // Sets parsed claims to KeyAccessClaims param.
 func (m *Middlewares) JWTAccess() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -63,27 +63,58 @@ func (m *Middlewares) JWTAccess() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := tokens.ParseAccessToken(sign)
+		err = m.initJWTAccess(ctx, sign)
 		if err != nil {
 			ctx.Err(err)
 			ctx.Abort()
 			return
-		}
-		ctx.Set(KeyAccessClaims, claims)
-
-		err = claims.Valid()
-		if err != nil {
-			ctx.Err(err)
-			ctx.Abort()
-			return
-		}
-
-		if claims.Language != "" {
-			ctx.SetI18nLang(claims.Language)
 		}
 
 		ctx.Next()
 	}
+}
+
+// NonRequiredJWTAccess is an authorization by the Access token if it is provided.
+// Sets parsed claims to KeyAccessClaims param.
+func (m *Middlewares) NonRequiredJWTAccess() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := NewContextHandler(c)
+
+		var err error
+		sign, err := ctx.ExtractBearerToken()
+		if err != nil {
+			ctx.Next()
+			return
+		}
+
+		err = m.initJWTAccess(ctx, sign)
+		if err != nil {
+			ctx.Err(err)
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+func (m *Middlewares) initJWTAccess(ctx *ContextHandler, sign string) error {
+	claims, err := tokens.ParseAccessToken(sign)
+	if err != nil {
+		return err
+	}
+	ctx.Set(KeyAccessClaims, claims)
+
+	err = claims.Valid()
+	if err != nil {
+		return err
+	}
+
+	if claims.Language != "" {
+		ctx.SetI18nLang(claims.Language)
+	}
+
+	return nil
 }
 
 // RequireRole validates user role is equal to specified
