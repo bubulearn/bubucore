@@ -131,7 +131,7 @@ func DIDefRouter() di.Def {
 
 			// CORS
 			if conf.CORSEnable {
-				router.Use(cors.New(cors.Config{
+				cc := cors.Config{
 					AllowWildcard: true,
 
 					AllowAllOrigins:        conf.CORSAllowAll,
@@ -141,8 +141,13 @@ func DIDefRouter() di.Def {
 
 					AllowOrigins: conf.CORSOrigins,
 					AllowHeaders: conf.CORSHeaders,
-					AllowMethods: conf.CORSMethods,
-				}))
+				}
+
+				if !cc.AllowAllOrigins {
+					cc.AllowOrigins = conf.CORSOrigins
+				}
+
+				router.Use(cors.New(cc))
 			}
 
 			return router, nil
