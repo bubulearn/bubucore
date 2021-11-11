@@ -139,8 +139,8 @@ func DIDefRouter() di.Def {
 					AllowWebSockets:        conf.CORSAllowWS,
 					AllowBrowserExtensions: conf.CORSAllowExt,
 
-					AllowOrigins: conf.CORSOrigins,
 					AllowHeaders: conf.CORSHeaders,
+					AllowMethods: conf.CORSMethods,
 				}
 
 				if !cc.AllowAllOrigins {
