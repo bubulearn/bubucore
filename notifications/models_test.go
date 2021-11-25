@@ -52,11 +52,11 @@ func TestEmail_Validate(t *testing.T) {
 	valid := []notifications.Email{
 		{
 			Recipients:   []string{"test@email.com", "John Doe <john@example.com>"},
-			TemplateName: notifications.TplResetPassLink,
+			TemplateName: "template_1",
 		},
 		{
 			Recipients:   []string{"test@email.com", "John Doe <john@example.com>"},
-			TemplateName: notifications.TplResetPassLink,
+			TemplateName: "template_2",
 			Subject:      "Subject override",
 			TemplateValues: map[string]interface{}{
 				"key": "value",
