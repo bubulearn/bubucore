@@ -17,6 +17,7 @@ const (
 	EndpointCustomEmail      = "email"
 	EndpointPushNotification = "push"
 	EndpointAppEvent         = "app-event"
+	EndpointSMS              = "sms"
 )
 
 // NewClient creates new notifications service client
@@ -145,6 +146,11 @@ func (c *Client) SendAppReport(msg string) error {
 // SendPushNotification sends push notification
 func (c *Client) SendPushNotification(push PushNotification) error {
 	return c.Send(EndpointPushNotification, push)
+}
+
+// SendSMS sends SMS
+func (c *Client) SendSMS(sms SMS) error {
+	return c.Send(EndpointSMS, sms)
 }
 
 // SendAppEvent sends notification to the message broken about some backend app event
