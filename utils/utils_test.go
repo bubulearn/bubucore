@@ -207,3 +207,17 @@ func TestGenerateRandomString(t *testing.T) {
 	match := rx.Match([]byte(str))
 	assert.Equal(t, true, match)
 }
+
+func TestNormalizePhone(t *testing.T) {
+	values := map[string]string{
+		"+7 (900) 123-45-67": "+79001234567",
+		"(900) 123-45-67":    "+79001234567",
+		"8900 123-45-67":     "+79001234567",
+		"89004567890":        "+79004567890",
+		"9004567890":         "+79004567890",
+	}
+
+	for inp, expected := range values {
+		assert.Equal(t, expected, utils.NormalizePhone(inp))
+	}
+}

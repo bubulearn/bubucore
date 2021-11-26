@@ -76,6 +76,25 @@ func ValidatePhone(phone string) bool {
 	return regxPhone.MatchString(phone)
 }
 
+// NormalizePhone removes all characters from the phone except plus and numbers
+func NormalizePhone(phone string) string {
+	rx := regexp.MustCompile(`[^+0-9]`)
+	b := rx.ReplaceAll([]byte(phone), []byte(""))
+	phone = string(b)
+
+	// 89004567890 -> +79004567890
+	if len(phone) == 11 && phone[0:1] == "8" {
+		phone = "+7" + phone[1:]
+	}
+
+	// 9004567890 -> +79004567890
+	if len(phone) == 10 && phone[0:1] == "9" {
+		phone = "+7" + phone
+	}
+
+	return phone
+}
+
 // JSONConvert converts anything to anything through JSON marshalling
 func JSONConvert(source interface{}, target interface{}) error {
 	json, err := jsoniter.Marshal(source)
