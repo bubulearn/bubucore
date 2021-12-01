@@ -20,28 +20,28 @@ import (
 // Dependencies names
 const (
 	// DIConfigViper contains app config read to viper.Viper instance
-	DIConfigViper = "config_viper"
+	DIConfigViper = "bubu_config_viper"
 
 	// DIConfig contains initialized Config instance
-	DIConfig = "config"
+	DIConfig = "bubu_config"
 
 	// DII18n contains initialized i18n.TextsSource instance
-	DII18n = "i18n"
+	DII18n = "bubu_i18n"
 
 	// DIRouter contains gin router (gin.Engine) instance
-	DIRouter = "router"
+	DIRouter = "bubu_router"
 
 	// DINotifications contains notifications.Client instance
-	DINotifications = "notifications"
+	DINotifications = "bubu_notifications"
 
 	// DIUsersService contains users.Client instance
-	DIUsersService = "users_service"
+	DIUsersService = "bubu_users_service"
 
 	// DIMongo contains mongodb.MongoDB connection instance, or nil if no mongo host provided in config
-	DIMongo = "mongo"
+	DIMongo = "bubu_mongo"
 
 	// DIRedis contains redis.Client instance, or nil if no redis host provided in config
-	DIRedis = "redis"
+	DIRedis = "bubu_redis"
 )
 
 // GetDefaultDIBuilder returns default DI builder
