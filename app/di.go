@@ -26,6 +26,7 @@ const (
 	DIConfig = "bubu_config"
 
 	// DII18n contains initialized i18n.TextsSource instance
+	// In case of renaming, see ginsrv/context.go:42
 	DII18n = "bubu_i18n"
 
 	// DIRouter contains gin router (gin.Engine) instance

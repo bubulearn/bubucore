@@ -39,7 +39,7 @@ func (h *ContextHandler) GetContainer() *di.Container {
 
 // GetI18nSource returns i18n texts source from the container
 func (h *ContextHandler) GetI18nSource() *i18n.TextsSource {
-	return h.GetContainer().Get("i18n").(*i18n.TextsSource)
+	return h.GetContainer().Get("bubu_i18n").(*i18n.TextsSource)
 }
 
 // GetAccessClaims returns AccessTokenClaims from the current gin context
