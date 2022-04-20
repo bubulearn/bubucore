@@ -29,6 +29,7 @@ type DAO interface {
 
 	DeleteByID(id string, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
 	DeleteOne(filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
+	DeleteMany(filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
 
 	Ctx(seconds uint) (context.Context, context.CancelFunc)
 	Err(err error) error
@@ -229,6 +230,13 @@ func (d *DAOMg) DeleteOne(filter interface{}, opts ...*options.DeleteOptions) (*
 	ctx, cancel := d.Ctx(3)
 	defer cancel()
 	return d.C().DeleteOne(ctx, filter, opts...)
+}
+
+// DeleteMany deletes filtered rows
+func (d *DAOMg) DeleteMany(filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	ctx, cancel := d.Ctx(5)
+	defer cancel()
+	return d.C().DeleteMany(ctx, filter, opts...)
 }
 
 // C returns Collection
