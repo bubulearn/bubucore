@@ -15,8 +15,8 @@ import (
 const logTag = "[bubucore][staticservice]"
 
 const (
-	endpointUpload  = "uploader/upload"
-	endpointUploads = "uploader/uploads"
+	endpointUpload  = "/uploader/upload"
+	endpointUploads = "/uploader/uploads"
 )
 
 const (
