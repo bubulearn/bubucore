@@ -68,7 +68,7 @@ func (c *Client) Upload(title string, data []byte, ttl uint64) (upload *Upload, 
 		return nil, err
 	}
 
-	body := new(bytes.Buffer)
+	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
 	part, err := writer.CreateFormFile(inputKeyFile, title)
@@ -94,10 +94,12 @@ func (c *Client) Upload(title string, data []byte, ttl uint64) (upload *Upload, 
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.host+endpointUpload, body)
+	req, err := http.NewRequest(http.MethodPost, c.host+endpointUpload, bytes.NewReader(body.Bytes()))
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	var upl *Upload
 
