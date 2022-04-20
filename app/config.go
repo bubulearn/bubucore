@@ -34,6 +34,9 @@ type Config struct {
 	UsersServiceUseRedis bool
 	UsersServiceTTL      int
 
+	StaticServiceHost string
+	StaticServiceSign string
+
 	RedisHost     string
 	RedisDb       int
 	RedisPassword string
@@ -87,6 +90,9 @@ func (c *Config) SetFromViper(conf *viper.Viper) {
 	c.UsersServiceToken = conf.GetString("bubu_users_token")
 	c.UsersServiceUseRedis = conf.GetBool("bubu_users_use_redis")
 	c.UsersServiceTTL = conf.GetInt("bubu_users_ttl")
+
+	c.StaticServiceHost = conf.GetString("bubu_staticservice_host")
+	c.StaticServiceSign = conf.GetString("bubu_staticservice_sign")
 
 	c.RedisHost = conf.GetString("redis_host")
 	c.RedisDb = conf.GetInt("redis_db")

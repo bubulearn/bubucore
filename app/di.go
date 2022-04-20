@@ -8,6 +8,7 @@ import (
 	"github.com/bubulearn/bubucore/i18n"
 	"github.com/bubulearn/bubucore/mongodb"
 	"github.com/bubulearn/bubucore/notifications"
+	"github.com/bubulearn/bubucore/staticservice"
 	"github.com/bubulearn/bubucore/users"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,9 @@ const (
 	// DIUsersService contains users.Client instance
 	DIUsersService = "bubu_users_service"
 
+	// DIStaticService contains users.Client instance
+	DIStaticService = "bubu_static_service"
+
 	// DIMongo contains mongodb.MongoDB connection instance, or nil if no mongo host provided in config
 	DIMongo = "bubu_mongo"
 
@@ -59,7 +63,7 @@ func GetDefaultDIBuilder() (*di.Builder, error) {
 		return nil, err
 	}
 
-	err = builder.Add(DIDefNotifications(), DIDefUsersService())
+	err = builder.Add(DIDefNotifications(), DIDefUsersService(), DIDefStaticService())
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +202,21 @@ func DIDefUsersService() di.Def {
 	}
 }
 
+// DIDefStaticService returns default staticservice.Client dependency definition
+func DIDefStaticService() di.Def {
+	return di.Def{
+		Name: DIStaticService,
+		Build: func(ctn *di.Container) (interface{}, error) {
+			conf := ctn.Get(DIConfig).(*Config)
+			client := staticservice.NewClient(conf.StaticServiceHost, conf.StaticServiceSign)
+			return client, nil
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*staticservice.Client).Close()
+		},
+	}
+}
+
 // DIDefMongo returns default mongodb.MongoDB dependency definition.
 // Returns nil if no Config.MongoHost defined in config.
 func DIDefMongo() di.Def {
@@ -291,6 +310,11 @@ func DIGetNotifications(ctn *di.Container) *notifications.Client {
 // DIGetUsersService returns users.Client from the DI container
 func DIGetUsersService(ctn *di.Container) *users.Client {
 	return ctn.Get(DIUsersService).(*users.Client)
+}
+
+// DIGetStaticService returns staticservice.Client from the DI container
+func DIGetStaticService(ctn *di.Container) *staticservice.Client {
+	return ctn.Get(DIStaticService).(*staticservice.Client)
 }
 
 // DIGetMongoDB returns mongodb.MongoDB from the DI container

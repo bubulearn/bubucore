@@ -6,7 +6,7 @@ build:
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 	rm -f coverage.out
-	go get golang.org/x/lint/golint
+	go install golang.org/x/lint/golint@latest
 	golint -set_exit_status=true ./...
 	go build ./...
 	go mod tidy
