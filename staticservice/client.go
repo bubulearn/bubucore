@@ -43,7 +43,7 @@ type Client struct {
 
 // GetAll returns all uploads
 func (c *Client) GetAll() (uploads []*Upload, err error) {
-	err = c.DoRequest(http.MethodGet, endpointUploads, nil, &uploads)
+	err = c.DoJSONRequest(http.MethodGet, endpointUploads, nil, &uploads)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (c *Client) GetAll() (uploads []*Upload, err error) {
 
 // GetUploadInfo fetches upload info by upload ID
 func (c *Client) GetUploadInfo(uploadID string) (upload *Upload, err error) {
-	err = c.DoRequest(http.MethodGet, endpointUpload+"/"+uploadID, nil, &upload)
+	err = c.DoJSONRequest(http.MethodGet, endpointUpload+"/"+uploadID, nil, &upload)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *Client) Upload(title string, data []byte, ttl uint64) (upload *Upload, 
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.host+endpointUpload, bytes.NewReader(body.Bytes()))
+	req, err := http.NewRequest(http.MethodPost, c.host+endpointUpload, body)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,8 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// DoRequest sends request to the users service and decodes response to the respData
-func (c *Client) DoRequest(method string, endpoint string, reqData interface{}, respData interface{}) (err error) {
+// DoJSONRequest sends request to the users service and decodes response to the respData
+func (c *Client) DoJSONRequest(method string, endpoint string, reqData interface{}, respData interface{}) (err error) {
 	err = c.checkPreconditions()
 	if err != nil {
 		return err
@@ -141,12 +141,13 @@ func (c *Client) DoRequest(method string, endpoint string, reqData interface{}, 
 		return err
 	}
 
+	req.Header.Set("Content-type", "application/json")
+
 	return c.doRequest(req, respData)
 }
 
 func (c *Client) doRequest(req *http.Request, respData interface{}) (err error) {
 	req.Header.Set("Authorization", "Bearer "+c.sign)
-	req.Header.Set("Content-type", "application/json")
 
 	resp, err := c.client().Do(req)
 	if err != nil {
