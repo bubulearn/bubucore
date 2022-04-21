@@ -62,7 +62,7 @@ func (c *Client) GetUploadInfo(uploadID string) (upload *Upload, err error) {
 }
 
 // Upload sends file upload request
-func (c *Client) Upload(title string, data []byte, ttl uint64) (upload *Upload, err error) {
+func (c *Client) Upload(title string, filename string, data []byte, ttl uint64) (upload *Upload, err error) {
 	err = c.checkPreconditions()
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (c *Client) Upload(title string, data []byte, ttl uint64) (upload *Upload, 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile(inputKeyFile, title)
+	part, err := writer.CreateFormFile(inputKeyFile, filename)
 	if err != nil {
 		return nil, err
 	}
