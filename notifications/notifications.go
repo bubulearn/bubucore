@@ -18,6 +18,7 @@ const (
 	EndpointPushNotification = "push"
 	EndpointAppEvent         = "app-event"
 	EndpointSMS              = "sms"
+	EndpointAmoCRMLead       = "amocrm/lead"
 )
 
 // NewClient creates new notifications service client
@@ -162,6 +163,11 @@ func (c *Client) SendAppEvent(eventName string, eventData interface{}) error {
 // SendCustomAppEvent sends notification to the message broken about some backend app event
 func (c *Client) SendCustomAppEvent(event AppEvent) error {
 	return c.Send(EndpointAppEvent, event)
+}
+
+// SendAmoCRMLead send new lead to the AmoCRM
+func (c *Client) SendAmoCRMLead(lead AmoCRMLead) error {
+	return c.Send(EndpointAmoCRMLead, lead)
 }
 
 // Close finalizes the Client
