@@ -92,6 +92,11 @@ func NormalizePhone(phone string) string {
 		phone = "+7" + phone
 	}
 
+	// 79004567890 -> +79004567890
+	if len(phone) == 11 && phone[0:1] != "+" {
+		phone = "+" + phone
+	}
+
 	return phone
 }
 
