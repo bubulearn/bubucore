@@ -100,8 +100,19 @@ func (c *Client) Send(endpoint string, data interface{}) error {
 		return err
 	}
 
+	agentParts := []string{"go-http"}
+	if bubucore.Opt != nil {
+		if bubucore.Opt.ServiceName != "" {
+			agentParts = append(agentParts, bubucore.Opt.ServiceName)
+		}
+		if bubucore.Opt.APIVersion != "" {
+			agentParts = append(agentParts, bubucore.Opt.APIVersion)
+		}
+	}
+
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("User-Agent", strings.Join(agentParts, "; "))
 
 	resp, err := c.client().Do(req)
 	if err != nil {
