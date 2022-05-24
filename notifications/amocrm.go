@@ -22,7 +22,6 @@ type AmoCRMLead struct {
 // AmoCRMLeadCustomField is a custom field structure
 // https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
 type AmoCRMLeadCustomField struct {
-	FieldID   int         `json:"field_id"`
-	FieldCode string      `json:"field_code"`
-	Values    interface{} `json:"values"`
+	FieldID int         `json:"field_id"`
+	Values  interface{} `json:"values"`
 }
