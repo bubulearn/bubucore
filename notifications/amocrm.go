@@ -100,7 +100,8 @@ type AmoCRMContactEmbedded struct {
 
 // AmoCRMContactsResp is an add contacts response
 type AmoCRMContactsResp struct {
-	Links *AmoCRMLinks `json:"_links"`
+	Links    *AmoCRMLinks                `json:"_links"`
+	Embedded *AmoCRMContactsEmbeddedResp `json:"_embedded"`
 }
 
 // AmoCRMContactsEmbeddedResp is an add contacts embedded response
