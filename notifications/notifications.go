@@ -177,8 +177,8 @@ func (c *Client) SendCustomAppEvent(event AppEvent) error {
 }
 
 // SendAmoCRMLead send new lead to the AmoCRM
-func (c *Client) SendAmoCRMLead(lead AmoCRMLead) error {
-	return c.Send(EndpointAmoCRMLead, lead)
+func (c *Client) SendAmoCRMLead(req AmoCRMAddLeadReq) error {
+	return c.Send(EndpointAmoCRMLead, req)
 }
 
 // Close finalizes the Client
