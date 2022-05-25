@@ -46,14 +46,8 @@ type AmoCRMLead struct {
 	LossReasonID      int `json:"loss_reason_id,omitempty"`
 	ResponsibleUserID int `json:"responsible_user_id,omitempty"`
 
-	CustomFieldsValues []*AmoCRMLeadCustomField `json:"custom_fields_values,omitempty"`
-	Embedded           *AmoCRMLeadEmbedded      `json:"_embedded,omitempty"`
-}
-
-// AmoCRMLeadCustomField is a custom field structure
-// https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-type AmoCRMLeadCustomField struct {
-	AmoCRMCustomField
+	CustomFieldsValues []*AmoCRMCustomField `json:"custom_fields_values,omitempty"`
+	Embedded           *AmoCRMLeadEmbedded  `json:"_embedded,omitempty"`
 }
 
 // AmoCRMLeadEmbedded is an embedded lead data
