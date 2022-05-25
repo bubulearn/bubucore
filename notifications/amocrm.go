@@ -1,5 +1,11 @@
 package notifications
 
+// AmoCRMAddLeadReq request to add new AmoCRM lead
+type AmoCRMAddLeadReq struct {
+	Lead    *AmoCRMLead    `json:"lead"`
+	Contact *AmoCRMContact `json:"contact,omitempty"`
+}
+
 // AmoCRMItemWithID is a common object with ID
 type AmoCRMItemWithID struct {
 	ID int `json:"id"`
