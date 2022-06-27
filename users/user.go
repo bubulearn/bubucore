@@ -24,7 +24,8 @@ type User struct {
 	// Code for teacher to assign to the student
 	Code string `json:"code" example:"123456"`
 
-	Language i18n.Language `json:"lang" swaggertype:"string" enums:"en,ru" example:"ru"`
+	Language        i18n.Language `json:"lang" swaggertype:"string" enums:"en,ru" example:"ru"`
+	LessonsLanguage i18n.Language `json:"lessons_lang" swaggertype:"string" enums:"en,ru" example:"ru"`
 
 	// TeacherID for student, ID of teacher assigned
 	TeacherID string `json:"teacher_id,omitempty" example:"b21b949e-8495-4f56-ab9e-502199af48cf"`

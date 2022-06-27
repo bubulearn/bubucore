@@ -123,10 +123,14 @@ func (c TokenClaimsDft) GetRelatedTokenID() string {
 // AccessTokenClaims is an access token claims
 type AccessTokenClaims struct {
 	TokenClaimsDft
-	Role           int           `json:"rl"`
-	Name           string        `json:"nm,omitempty"`
-	RefreshTokenID string        `json:"rti,omitempty"`
-	Language       i18n.Language `json:"lng,omitempty"`
+
+	Role int `json:"rl"`
+
+	Name           string `json:"nm,omitempty"`
+	RefreshTokenID string `json:"rti,omitempty"`
+
+	Language        i18n.Language `json:"lng,omitempty"`
+	LessonsLanguage i18n.Language `json:"llng,omitempty"`
 }
 
 // Valid checks is data in claims is valid
@@ -145,7 +149,7 @@ func (c AccessTokenClaims) GetRelatedTokenID() string {
 	return c.RefreshTokenID
 }
 
-// RefreshTokenClaims is an refresh token claims
+// RefreshTokenClaims is a refresh token claims
 type RefreshTokenClaims struct {
 	TokenClaimsDft
 	AccessTokenID string `json:"ati"`
